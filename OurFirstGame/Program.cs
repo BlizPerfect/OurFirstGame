@@ -5,72 +5,154 @@ using System.Threading;
 
 namespace OurFirstGame
 {
-    class Map
+    class Hud
     {
-        public int[,] field;
-        public int[,] oldField;
-        public int rows;
-        public int columns;
-        public Map()
-        {
-            //field = new int[,] { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 } };
-            field = new int[10, 20];
-            oldField = new int[10, 20];
-            rows = field.GetUpperBound(0) + 1;
-            columns = field.GetUpperBound(1) + 1;
-        }
+        public int leftBorder;
+        public int rightBorder;
+        public int upperBorder;
+        public int bottomBorder;
 
-    }
-    class Player
-    {
-        public int playerColumn = 1;
-        public int playerRow = 1;
-    }
-    class Program
-    {
-        public static void CreateBoundaries(Map map)
+        public void DrawHudBorder(int leftBorder, int rightBorder, int upperBorder, int bottomBorder)
         {
-            for (int i = 0; i < map.rows; i++)
+            for (int i = upperBorder; i < bottomBorder; i++)
             {
-                for (int j = 0; j < map.columns; j++)
+                for (int j = leftBorder; j < rightBorder; j++)
                 {
-                    if (i == 0)
+                    Console.SetCursorPosition(j, i);
+                    if (i == upperBorder)
                     {
-                        if (j == 0)
+                        if (j == leftBorder)
                         {
-                            map.field[i, j] = 1;
+                            Console.Write("╔");
                         }
-                        else if (j == map.columns - 1)
+                        else if (j == rightBorder - 1)
                         {
-                            map.field[i, j] = 2;
+                            Console.Write("╗");
                         }
                         else
                         {
-                            map.field[i, j] = 5;
+                            Console.Write("═");
                         }
                     }
-                    else if (i == map.rows - 1)
+                    else if (i == bottomBorder - 1)
                     {
-                        if (j == 0)
+                        if (j == leftBorder)
                         {
-                            map.field[i, j] = 3;
+                            Console.Write("╚");
                         }
-                        else if (j == map.columns - 1)
+                        else if (j == rightBorder - 1)
                         {
-                            map.field[i, j] = 4;
+                            Console.Write("╝");
                         }
                         else
                         {
-                            map.field[i, j] = 5;
+                            Console.Write("═");
                         }
                     }
-                    else if ((j == 0 || j == map.columns - 1) && (i != 0 || i != map.rows - 1))
+                    else if ((j == leftBorder || j == rightBorder - 1) && (i != upperBorder || i != bottomBorder - 1))
                     {
-                        map.field[i, j] = 6;
+                        Console.Write("║");
                     }
                 }
             }
         }
+    }
+    class HudAction : Hud
+    {
+        public HudAction(Map map)
+        {
+            leftBorder = 0;
+            rightBorder = Map.columns + 22;
+            upperBorder = Map.rows + 2;
+            bottomBorder = upperBorder + 8;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+        }
+    }
+    class HudStats : Hud
+    {
+        public HudStats(Map map, Player player)
+        {
+            leftBorder = Map.columns + 2;
+            rightBorder = leftBorder + 20;
+            upperBorder = 0;
+            bottomBorder = Map.rows + 2;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+            DrawPlayerStats(player);
+        }
+
+        public void DrawPlayerStats(Player player)
+        {
+            var i = 1;
+            foreach (var stat in player.playerStats)
+            {
+                Console.SetCursorPosition(leftBorder + 1, upperBorder + i);
+                i += 1;
+                Console.WriteLine(stat.Key + ": " + stat.Value);
+            }
+        }
+    }
+
+    class HudMap : Hud
+    {
+        public HudMap(Map map)
+        {
+            leftBorder = 0;
+            rightBorder = Map.columns + 2;
+            upperBorder = 0;
+            bottomBorder = Map.rows + 2;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+        }
+    }
+    class Map
+    {
+        public int[,] field;
+        public int[,] oldField;
+        public static int rows;
+        public static int columns;
+
+        public Map()
+        {
+            field = new int[28, 98];
+            oldField = new int[28, 98];
+
+            //field = new int[3, 5];
+            //oldField = new int[3, 5];
+            rows = field.GetUpperBound(0) + 1;
+            columns = field.GetUpperBound(1) + 1;
+        }
+        public void Redraw(Map map, Dictionary<int, string> mapDictionary)
+        {
+            for (int x = 0; x < Map.rows; x++)
+            {
+                for (int y = 0; y < Map.columns; y++)
+                {
+                    if (map.field != map.oldField)
+                    {
+                        Console.SetCursorPosition(y + 1, x + 1);
+                        Console.Write(mapDictionary[map.field[x, y]]);
+                    }
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+    class Player
+    {
+        public int playerColumn = 0;
+        public int playerRow = 0;
+        public int hp;
+        public Player()
+        {
+            hp = 100;
+        }
+        public Dictionary<string, int> playerStats = new Dictionary<string, int>{
+            {"HP", 100},
+            {"ARMOR", 0},
+        };
+
+    }
+    class Program
+    {
         public static void PlacePlayer(Map map, Player player)
         {
             map.field[player.playerRow, player.playerColumn] = 7;
@@ -83,28 +165,28 @@ namespace OurFirstGame
             var pressedKey = Console.ReadKey().Key;
             if (pressedKey.Equals(ConsoleKey.LeftArrow))
             {
-                if (player.playerColumn > 1)
+                if (player.playerColumn > 0)
                 {
                     player.playerColumn -= 1;
                 }
             }
             else if (pressedKey == ConsoleKey.RightArrow)
             {
-                if (player.playerColumn < map.columns - 2)
+                if (player.playerColumn < Map.columns - 1)
                 {
                     player.playerColumn += 1;
                 }
             }
             else if (pressedKey.Equals(ConsoleKey.DownArrow))
             {
-                if (player.playerRow < map.rows - 2)
+                if (player.playerRow < Map.rows - 1)
                 {
                     player.playerRow += 1;
                 }
             }
             else if (pressedKey == ConsoleKey.UpArrow)
             {
-                if (player.playerRow > 1)
+                if (player.playerRow > 0)
                 {
                     player.playerRow -= 1;
                 }
@@ -115,35 +197,12 @@ namespace OurFirstGame
         }
         public static void ShowMassive(Map Map)
         {
+            Console.SetCursorPosition(0, Map.rows + 10);
             for (int i = 0; i < Map.rows; i++)
             {
                 for (int j = 0; j < Map.columns; j++)
                 {
                     Console.Write(Map.field[i, j]);
-                }
-                Console.WriteLine();
-            }
-            for (int i = 0; i < Map.rows; i++)
-            {
-                for (int j = 0; j < Map.columns; j++)
-                {
-                    Console.Write(Map.oldField[i, j]);
-                }
-                Console.WriteLine();
-            }
-        }
-
-        public static void Redraw(Map map, Dictionary<int, string> mapDictionary)
-        {
-            for (int x = 0; x < map.rows; x++)
-            {
-                for (int y = 0; y < map.columns; y++)
-                {
-                    if (map.field != map.oldField)
-                    {
-                        Console.SetCursorPosition(y, x);
-                        Console.Write(mapDictionary[map.field[x, y]]);
-                    }
                 }
                 Console.WriteLine();
             }
@@ -160,17 +219,20 @@ namespace OurFirstGame
             mapDictionary.Add(5, "═");
             mapDictionary.Add(6, "║");
             mapDictionary.Add(7, "@");
-            var player = new Player();
             var map = new Map();
-            CreateBoundaries(map);
-            PlacePlayer(map, player);
-            Redraw(map, mapDictionary);
+            var player = new Player();
+            var hudStats = new HudStats(map, player);
+            var hudAction = new HudAction(map);
+            var hudMap = new HudMap(map);
 
+
+            PlacePlayer(map, player);
+            map.Redraw(map, mapDictionary);
             while (true)
             {
                 MovePlayer(map, player);
-                Redraw(map, mapDictionary);
-                ShowMassive(map);
+                map.Redraw(map, mapDictionary);
+                //ShowMassive(map);
                 Thread.Sleep(1);
             }
 
