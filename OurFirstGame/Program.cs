@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace OurFirstGame
@@ -57,12 +59,68 @@ namespace OurFirstGame
             }
         }
     }
+    class HudRightLeg : Hud
+    {
+        public HudRightLeg(Map map)
+        {
+            leftBorder = Map.columns + 18;
+            rightBorder = leftBorder + 12;
+            upperBorder = 26;
+            bottomBorder = upperBorder + 8;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+        }
+    }
+    class HudLeftLeg : Hud
+    {
+        public HudLeftLeg(Map map)
+        {
+            leftBorder = Map.columns + 4;
+            rightBorder = leftBorder + 12;
+            upperBorder = 26;
+            bottomBorder = upperBorder + 8;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+        }
+    }
+    class HudChest : Hud
+    {
+        public HudChest(Map map)
+        {
+            leftBorder = Map.columns + 4;
+            rightBorder = leftBorder + 26;
+            upperBorder = 10;
+            bottomBorder = upperBorder + 16;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+        }
+    }
+    class HudRightArm : Hud
+    {
+        public HudRightArm(Map map)
+        {
+            leftBorder = Map.columns + 18;
+            rightBorder = leftBorder + 12;
+            upperBorder = 2;
+            bottomBorder = upperBorder + 8;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+        }
+    }
+
+    class HudLeftArm : Hud
+    {
+        public HudLeftArm(Map map)
+        {
+            leftBorder = Map.columns + 4;
+            rightBorder = leftBorder + 12;
+            upperBorder = 2;
+            bottomBorder = upperBorder + 8;
+            DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
+        }
+    }
     class HudAction : Hud
     {
         public HudAction(Map map)
         {
             leftBorder = 0;
-            rightBorder = Map.columns + 22;
+            rightBorder = Map.columns + 32;
             upperBorder = Map.rows + 2;
             bottomBorder = upperBorder + 8;
             DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
@@ -73,11 +131,11 @@ namespace OurFirstGame
         public HudStats(Map map, Player player)
         {
             leftBorder = Map.columns + 2;
-            rightBorder = leftBorder + 20;
+            rightBorder = leftBorder + 30;
             upperBorder = 0;
             bottomBorder = Map.rows + 2;
             DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
-            DrawPlayerStats(player);
+            // DrawPlayerStats(player);
         }
 
         public void DrawPlayerStats(Player player)
@@ -103,43 +161,239 @@ namespace OurFirstGame
             DrawHudBorder(leftBorder, rightBorder, upperBorder, bottomBorder);
         }
     }
+    class Cell
+    {
+        public int Value;
+        public string Type;
+        public string VisualRepresentation;
+
+        public void Redraw(int GlobalRow, int GlobalColumn)
+        {
+            Console.SetCursorPosition(GlobalRow, GlobalColumn);
+            Console.Write(VisualRepresentation);
+        }
+    }
+
+    class CellTopLeftCorner : Cell
+    {
+        public CellTopLeftCorner()
+        {
+            Value = 1;
+            Type = "WALL";
+            VisualRepresentation = "╔";
+        }
+    }
+    class CellTopRightCorner : Cell
+    {
+        public CellTopRightCorner()
+        {
+            Value = 2;
+            Type = "WALL";
+            VisualRepresentation = "╗";
+        }
+    }
+
+    class CellBottomRightCorner : Cell
+    {
+        public CellBottomRightCorner()
+        {
+            Value = 3;
+            Type = "WALL";
+            VisualRepresentation = "╝";
+        }
+    }
+
+    class CellBottomLeftCorner : Cell
+    {
+        public CellBottomLeftCorner()
+        {
+            Value = 4;
+            Type = "WALL";
+            VisualRepresentation = "╚";
+        }
+    }
+
+    class CellHorizontal : Cell
+    {
+        public CellHorizontal()
+        {
+            Value = 5;
+            Type = "WALL";
+            VisualRepresentation = "═";
+        }
+    }
+
+    class CellVertical : Cell
+    {
+        public CellVertical()
+        {
+            Value = 6;
+            Type = "WALL";
+            VisualRepresentation = "║";
+        }
+    }
+
+    class CellGate : Cell
+    {
+        public CellGate()
+        {
+            Value = 7;
+            Type = "Gate";
+            VisualRepresentation = "╬";
+        }
+    }
+    class Room
+    {
+        public int RoomRows;
+        public int RoomColumns;
+        public int PositionOfRoomRow;
+        public int PositionOfRoomColumn;
+        public bool IsStart;
+        public Cell[,] RoomField;
+        public Room(int roomRows, int roomColumns, int positionOfRoomRow, int positionOfRoomColumn, bool startRoom)
+        {
+            RoomRows = roomRows;
+            RoomColumns = roomColumns;
+            PositionOfRoomRow = positionOfRoomRow;
+            PositionOfRoomColumn = positionOfRoomColumn;
+            IsStart = startRoom;
+            RoomField = CreateRoomWalls();
+            PlaceGate();
+            //DrawHudBorder(positionOfRoomColumn, positionOfRoomColumn + roomColumns, positionOfRoomRow, positionOfRoomRow + roomRows);
+        }
+
+        public void PlaceGate()
+        {
+            var i = 0;
+            var j = 0;
+            Random rnd = new Random();
+            if (rnd.Next(100) < 50)// определяем будет ли вход на горизонтальной или вертикальной стене. True - на горизонтальной
+            {
+                //Горизонтальная стена
+                if (rnd.Next(100) < 50)
+                {
+                    //Верх
+                    i = 0;
+                }
+                else
+                {
+                    //Низ
+                    i = RoomRows - 1;
+                }
+                j = rnd.Next(1, RoomColumns - 2);
+            }
+            else
+            {
+                //Вертикальная стена
+                if (rnd.Next(100) < 50)
+                {
+                    //Лево
+                    j = 0;
+                }
+                else
+                {
+                    //Право
+                    j = RoomColumns - 1;
+                }
+                i = rnd.Next(1, RoomRows - 2);
+            }
+            RoomField[i, j] = new CellGate();
+            RoomField[i, j].Redraw(j + PositionOfRoomColumn, i + PositionOfRoomRow);
+        }
+
+        public Cell[,] CreateRoomWalls()
+        {
+            var result = new Cell[RoomRows, RoomColumns];
+            for (int i = 0; i < RoomRows; i++)
+            {
+                for (int j = 0; j < RoomColumns; j++)
+                {
+                    var cell = new Cell();
+                    Console.SetCursorPosition(j + PositionOfRoomColumn, i + PositionOfRoomRow);
+                    if (i == 0)
+                    {
+                        if (j == 0)
+                        {
+                            cell = new CellTopLeftCorner();
+                        }
+                        else if (j == RoomColumns - 1)
+                        {
+                            cell = new CellTopRightCorner();
+                        }
+                        else
+                        {
+                            cell = new CellHorizontal();
+                        }
+                    }
+                    else if (i == RoomRows - 1)
+                    {
+                        if (j == 0)
+                        {
+                            cell = new CellBottomLeftCorner();
+                        }
+                        else if (j == RoomColumns - 1)
+                        {
+                            cell = new CellBottomRightCorner();
+                        }
+                        else
+                        {
+                            cell = new CellHorizontal();
+                        }
+                    }
+                    else if ((j == 0 || j == RoomColumns - 1) && (i != 0 || i != RoomRows - 1))
+                    {
+                        cell = new CellVertical();
+                    }
+                    result[i, j] = cell;
+                    Console.Write(cell.VisualRepresentation);
+                    //Console.Write(cell.Value);
+                }
+            }
+            return result;
+        }
+    }
+
+    class Floor
+    {
+        public List<Room> Rooms = new List<Room>();
+        public Floor(int roomCount)
+        {
+            for (var i = 0; i < roomCount; i++)
+            {
+                if (i == 0)
+                {
+                    Rooms.Add(new Room(4, 10, 1, 1, true));
+                }
+                Rooms.Add(new Room(4, 10, 1, 1, false));
+            }
+
+        }
+
+    }
     class Map
     {
         public int[,] field;
-        public int[,] oldField;
         public static int rows;
         public static int columns;
 
         public Map()
         {
-            field = new int[28, 98];
-            oldField = new int[28, 98];
+            field = new int[38, 148];
 
             //field = new int[3, 5];
             //oldField = new int[3, 5];
             rows = field.GetUpperBound(0) + 1;
             columns = field.GetUpperBound(1) + 1;
         }
-        public void Redraw(Map map, Dictionary<int, string> mapDictionary)
-        {
-            for (int x = 0; x < Map.rows; x++)
-            {
-                for (int y = 0; y < Map.columns; y++)
-                {
-                    if (map.field != map.oldField)
-                    {
-                        Console.SetCursorPosition(y + 1, x + 1);
-                        Console.Write(mapDictionary[map.field[x, y]]);
-                    }
-                }
-                Console.WriteLine();
-            }
-        }
+
+
     }
     class Player
     {
-        public int playerColumn = 0;
-        public int playerRow = 0;
+        public int playerColumn = 2;
+        public int previousPlayerColumn = 2;
+        public int playerRow = 2;
+        public int previousPlayerRow = 2;
         public int hp;
         public Player()
         {
@@ -149,52 +403,58 @@ namespace OurFirstGame
             {"HP", 100},
             {"ARMOR", 0},
         };
-
-    }
-    class Program
-    {
-        public static void PlacePlayer(Map map, Player player)
+        public void PlacePlayer(Map map, Dictionary<int, string> mapDictionary)
         {
-            map.field[player.playerRow, player.playerColumn] = 7;
+            map.field[playerRow, playerColumn] = 7;
+            Console.SetCursorPosition(playerColumn + 1, playerRow + 1);
+            Console.Write(mapDictionary[map.field[playerRow, playerColumn]]);
+
         }
-
-        public static void MovePlayer(Map map, Player player)
+        public void MovePlayer(Map map, Dictionary<int, string> mapDictionary)
         {
-            var oldPlayerColumn = player.playerColumn;
-            var oldPlayerRow = player.playerRow;
+            previousPlayerColumn = playerColumn;
+            previousPlayerRow = playerRow;
             var pressedKey = Console.ReadKey().Key;
             if (pressedKey.Equals(ConsoleKey.LeftArrow))
             {
-                if (player.playerColumn > 0)
+                if (playerColumn > 0)
                 {
-                    player.playerColumn -= 1;
+                    playerColumn -= 1;
                 }
             }
             else if (pressedKey == ConsoleKey.RightArrow)
             {
-                if (player.playerColumn < Map.columns - 1)
+                if (playerColumn < Map.columns - 1)
                 {
-                    player.playerColumn += 1;
+                    playerColumn += 1;
                 }
             }
             else if (pressedKey.Equals(ConsoleKey.DownArrow))
             {
-                if (player.playerRow < Map.rows - 1)
+                if (playerRow < Map.rows - 1)
                 {
-                    player.playerRow += 1;
+                    playerRow += 1;
                 }
             }
             else if (pressedKey == ConsoleKey.UpArrow)
             {
-                if (player.playerRow > 0)
+                if (playerRow > 0)
                 {
-                    player.playerRow -= 1;
+                    playerRow -= 1;
                 }
             }
-            map.oldField = (int[,])map.field.Clone();
-            map.field[oldPlayerRow, oldPlayerColumn] = 0;
-            map.field[player.playerRow, player.playerColumn] = 7;
+            Console.SetCursorPosition(playerColumn + 1, playerRow + 1);
+            map.field[playerRow, playerColumn] = 7;
+            Console.Write(mapDictionary[map.field[playerRow, playerColumn]]);
+
+            Console.SetCursorPosition(previousPlayerColumn + 1, previousPlayerRow + 1);
+            map.field[previousPlayerRow, previousPlayerColumn] = 0;
+            Console.Write(mapDictionary[map.field[previousPlayerRow, previousPlayerColumn]]);
+            Console.SetCursorPosition(0, 0);
         }
+    }
+    class Program
+    {
         public static void ShowMassive(Map Map)
         {
             Console.SetCursorPosition(0, Map.rows + 10);
@@ -211,31 +471,31 @@ namespace OurFirstGame
         static void Main(string[] args)
         {
             var mapDictionary = new Dictionary<int, string>();
+
             mapDictionary.Add(0, " ");
-            mapDictionary.Add(1, "╔");
-            mapDictionary.Add(2, "╗");
-            mapDictionary.Add(3, "╚");
-            mapDictionary.Add(4, "╝");
-            mapDictionary.Add(5, "═");
-            mapDictionary.Add(6, "║");
             mapDictionary.Add(7, "@");
+
             var map = new Map();
             var player = new Player();
             var hudStats = new HudStats(map, player);
+            //var hudLeftArm = new HudLeftArm(map);
+            //var hudRightArm = new HudRightArm(map);
+            //var HudChest = new HudChest(map);
+            //var hudLeftLeg = new HudLeftLeg(map);
+            //var hudRightLeg = new HudRightLeg(map);
             var hudAction = new HudAction(map);
             var hudMap = new HudMap(map);
+            Random rnd = new Random();
+            //var room1 = new Room(rnd.Next(5, 15), rnd.Next(10, 40), 1, 1, true);
+            var floor1 = new Floor(1);
+            player.PlacePlayer(map, mapDictionary);
 
-
-            PlacePlayer(map, player);
-            map.Redraw(map, mapDictionary);
             while (true)
             {
-                MovePlayer(map, player);
-                map.Redraw(map, mapDictionary);
+                player.MovePlayer(map, mapDictionary);
                 //ShowMassive(map);
                 Thread.Sleep(1);
             }
-
         }
     }
 }
