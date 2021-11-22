@@ -36,7 +36,7 @@ namespace OurFirstGame
                 {6,"╝"},
                 {7,"║" },
                 {8,"@" },//Player
-                {9, "X"}
+                {9, "."}
             };
 
             for (var x = 0; x < 1; x++)

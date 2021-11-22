@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 class Room
@@ -11,7 +12,7 @@ class Room
     public int RightColumn;
     public int BottomRow;
     public bool HorizontalConection;
-    public Gate Gate;
+    public List<Gate> Gates = new List<Gate>();
     public int RoomId;
 
     public Room(int rows, int columns, Point position, bool isStart, int roomId)
