@@ -7,7 +7,6 @@ class Room
     public int[,] Field;
     public int Rows;
     public int Columns;
-    public bool IsStart;
     public Point Position;
     public int RightColumn;
     public int BottomRow;
@@ -15,13 +14,12 @@ class Room
     public List<Gate> Gates = new List<Gate>();
     public int RoomId;
 
-    public Room(int rows, int columns, Point position, bool isStart, int roomId)
+    public Room(int rows, int columns, Point position, int roomId)
     {
         Field = new int[rows, columns];
         Rows = Field.GetUpperBound(0) + 1;
         Columns = Field.GetUpperBound(1) + 1;
         Position = position;
-        IsStart = isStart;
         RightColumn = Position.X + Columns;
         BottomRow = Position.Y + Rows;
         RoomId = roomId;
@@ -31,10 +29,6 @@ class Room
     public void FillField()
     {
         CreateBorders();
-        if (IsStart)
-        {
-            Field[1, 1] = 8;
-        }
     }
 
     public void CreateBorders()
@@ -80,6 +74,18 @@ class Room
                     Field[i, j] = 7;
                 }
             }
+        }
+    }
+    public void ReDrawRoom(Dictionary<int, string> dictionary)
+    {
+        for (int i = 0; i < Rows; i++)
+        {
+            for (int j = 0; j < Columns; j++)
+            {
+                Console.SetCursorPosition(Position.X + j, Position.Y + i);
+                Console.Write(dictionary[Field[i, j]]);
+            }
+            Console.WriteLine();
         }
     }
 }

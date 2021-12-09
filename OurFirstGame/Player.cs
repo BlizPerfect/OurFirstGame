@@ -2,56 +2,32 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-class Player
+class Player : Person
 {
-    public int Row;
-    public int Column;
-    public Floor CurrentFloor;
-    public Room CurrentRoom;
-
-    public Player(Point startingPosition, Floor currentFloor)
+    public int PRow;
+    public int PColumn;
+    public Player(Point startingPosition, Floor currentFloor, int spawnRoomId)
     {
         Row = startingPosition.Y;
         Column = startingPosition.X;
         CurrentFloor = currentFloor;
         CurrentRoom = CurrentFloor.Rooms[0];
+        currentFloor.Rooms[spawnRoomId].Field[startingPosition.Y, startingPosition.X] = 8;
+        POV = 6;
     }
 
-    public void PlayerDebug()
+    public override void Move(Dictionary<int, string> dictionary, Player player)
     {
-        Console.SetCursorPosition(130, 10);
-        Console.Write("Current room ID: " + CurrentRoom.RoomId);
-        Console.SetCursorPosition(130, 11);
-        Console.Write("Player Row:{0,2}", Row);
-        Console.SetCursorPosition(130, 12);
-        Console.Write("Player Column:{0,2}", Column);
-        var ind = 12;
-        foreach (var nextRoomId in CurrentRoom.Gates)
-        {
-            ind += 1;
-            Console.SetCursorPosition(130, ind);
-            Console.Write("{0,2}", nextRoomId.NextRoomIndex);
-        }
-        Console.SetCursorPosition(0, 0);
-    }
-
-    public void ChangeCurrentRoom(Room newCurrentRoom)
-    {
-        CurrentRoom = newCurrentRoom;
-    }
-
-    public void Move(Dictionary<int, string> dictionary)
-    {
-        PlayerDebug();
+        PersonDebug(130, 10);
         bool test = false;
         var pressedKey = Console.ReadKey().Key;
         var prevRoom = CurrentRoom;
-        int previousPlayerRow = Row;
-        int previousPlayerCol = Column;
 
+        PRow = Row;
+        PColumn = Column;
         if (pressedKey.Equals(ConsoleKey.LeftArrow))
         {
-            if (CheckingLeftWall())
+            if (CheckingLeftWall() && !CheckingPerson(-1, 0))
             {
                 Column -= 1;
             }
@@ -71,9 +47,9 @@ class Player
                             Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
                             Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
 
-                            Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
+                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
+                            CurrentRoom.Field[PRow, PColumn] = 0;
+                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
 
                             ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
 
@@ -82,8 +58,8 @@ class Player
 
                             CurrentRoom.Field[Row, Column] = 8;
 
-                            previousPlayerRow = Row;
-                            previousPlayerCol = Column;
+                            PRow = Row;
+                            PColumn = Column;
                         }
                         else if (CheckingLeftTeleport(i))
                         {
@@ -100,7 +76,7 @@ class Player
         }
         else if (pressedKey == ConsoleKey.RightArrow)
         {
-            if (CheckingRightWall())
+            if (CheckingRightWall() && !CheckingPerson(1, 0))
             {
                 Column += 1;
             }
@@ -118,9 +94,9 @@ class Player
                             Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
                             Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
 
-                            Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
+                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
+                            CurrentRoom.Field[PRow, PColumn] = 0;
+                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
 
                             ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
 
@@ -129,8 +105,8 @@ class Player
 
                             CurrentRoom.Field[Row, Column] = 8;
 
-                            previousPlayerRow = Row;
-                            previousPlayerCol = Column;
+                            PRow = Row;
+                            PColumn = Column;
                         }
                         else if (CheckingRightTeleport(i))
                         {
@@ -146,7 +122,7 @@ class Player
         }
         else if (pressedKey.Equals(ConsoleKey.DownArrow))
         {
-            if (CheckingDownWall())
+            if (CheckingDownWall() && !CheckingPerson(0, 1))
             {
                 Row += 1;
             }
@@ -164,9 +140,9 @@ class Player
                             Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
                             Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
 
-                            Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
+                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
+                            CurrentRoom.Field[PRow, PColumn] = 0;
+                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
 
                             ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
 
@@ -175,8 +151,8 @@ class Player
 
                             CurrentRoom.Field[Row, Column] = 8;
 
-                            previousPlayerRow = Row;
-                            previousPlayerCol = Column;
+                            PRow = Row;
+                            PColumn = Column;
                         }
                         else if (CheckingDownTeleport(i))
                         {
@@ -192,7 +168,7 @@ class Player
         }
         else if (pressedKey == ConsoleKey.UpArrow)
         {
-            if (CheckingUpWall())
+            if (CheckingUpWall() && !CheckingPerson(0, -1))
             {
                 Row -= 1;
             }
@@ -210,9 +186,9 @@ class Player
                             Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
                             Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
 
-                            Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
+                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
+                            CurrentRoom.Field[PRow, PColumn] = 0;
+                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
 
                             ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
 
@@ -221,8 +197,8 @@ class Player
 
                             CurrentRoom.Field[Row, Column] = 8;
 
-                            previousPlayerRow = Row;
-                            previousPlayerCol = Column;
+                            PRow = Row;
+                            PColumn = Column;
                         }
                         else if (CheckingUpTeleport(i))
                         {
@@ -236,10 +212,9 @@ class Player
                 }
             }
         }
-        //После реализации всех телепортов убрать этот блок
-        Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-        CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-        Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
+        Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
+        CurrentRoom.Field[PRow, PColumn] = 0;
+        Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
 
         Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
         CurrentRoom.Field[Row, Column] = 8;
@@ -251,38 +226,39 @@ class Player
         Console.Write("Player global position Column:{0,2}", Column + CurrentRoom.Position.X);
 
         Console.SetCursorPosition(0, 0);
+    }
 
-    }
-    public bool CheckingRightWall()
+    public (bool, Point) StartCombat()
     {
-        return (Column < CurrentRoom.Columns - 2 && (Row < CurrentRoom.Rows - 1 && Row > 0));
+        for (var dy = -1; dy <= 1; dy++)
+        {
+            for (var dx = -1; dx <= 1; dx++)
+            {
+                if (CheckingEnemy(dx, dy))
+                {
+                    return (true, new Point(dx, dy));
+                }
+            }
+        }
+        return (false, new Point(-1, -1));
     }
-    public bool CheckingLeftWall()
+
+    public void ShowPlayerPOV(Dictionary<int, string> dictionary)
     {
-        return (Column > 1 && (Row < CurrentRoom.Rows - 1 && Row > 0));
-    }
-    public bool CheckingDownWall()
-    {
-        return (Row < CurrentRoom.Rows - 2 && (Column > 0 && Column < CurrentRoom.Columns - 1));
-    }
-    public bool CheckingUpWall()
-    {
-        return (Row > 1 && (Column > 0 && Column < CurrentRoom.Columns - 1));
-    }
-    public bool CheckingLeftTeleport(int i)
-    {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column - 1);
-    }
-    public bool CheckingRightTeleport(int i)
-    {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column + 1);
-    }
-    public bool CheckingDownTeleport(int i)
-    {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row + 1 && CurrentRoom.Gates[i].GatePosition.X == Column);
-    }
-    public bool CheckingUpTeleport(int i)
-    {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row - 1 && CurrentRoom.Gates[i].GatePosition.X == Column);
+        for (var dy = -1 * POV; dy <= POV; dy++)
+        {
+            for (var dx = -1 * POV; dx <= POV; dx++)
+            {
+                if (Math.Abs(dx) + Math.Abs(dy) > POV) continue;
+                else
+                {
+                    if (CurrentRoom.Position.X + Column + dx >= 0 && CurrentRoom.Position.Y + Row + dy >= 0 && Row + dy < CurrentRoom.Rows && Column + dx < CurrentRoom.Columns && Row + dy >= 0 && Column + dx >= 0)
+                    {
+                        Console.SetCursorPosition(CurrentRoom.Position.X + Column + dx, CurrentRoom.Position.Y + Row + dy);
+                        Console.Write(dictionary[CurrentRoom.Field[Row + dy, Column + dx]]);
+                    }
+                }
+            }
+        }
     }
 }

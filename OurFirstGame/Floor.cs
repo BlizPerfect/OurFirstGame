@@ -5,12 +5,14 @@ using System.Drawing;
 class Floor
 {
     public Random Rnd = new Random();
-    public int RoomCount = 10;
+    public int RoomCount;
     public List<Room> Rooms;
+    public List<Mob> Mobs = new List<Mob>();
 
-    public Floor()
+    public Floor(int roomCount)
     {
         //RoomCount = Rnd.Next(6, 11);
+        RoomCount = roomCount;
         Rooms = new List<Room>();
         CreateFloor();
     }
@@ -64,7 +66,7 @@ class Floor
             int newRowPosition;
             if (Rooms.Count == 0)
             {
-                Rooms.Add(new Room(rows, cols, new Point(0, 0), true, i));
+                Rooms.Add(new Room(rows, cols, new Point(0, 0), i));
             }
             else
             {
@@ -98,7 +100,7 @@ class Floor
                         Rooms[i - 1].HorizontalConection = true;
                     }
                 }
-                Rooms.Add(new Room(rows, cols, new Point(newColumnPostition, newRowPosition), false, i));
+                Rooms.Add(new Room(rows, cols, new Point(newColumnPostition, newRowPosition), i));
                 if (Rooms.Count > 0 && Rooms.Count < RoomCount + 1)
                 {
                     if (Rooms[i - 1].HorizontalConection)
@@ -140,16 +142,9 @@ class Floor
     {
         foreach (var room in Rooms)
         {
-            //Console.ReadLine();
-            for (int i = 0; i < room.Rows; i++)
-            {
-                for (int j = 0; j < room.Columns; j++)
-                {
-                    Console.SetCursorPosition(room.Position.X + j, room.Position.Y + i);
-                    Console.Write(dictionary[room.Field[i, j]]);
-                }
-                Console.WriteLine();
-            }
+            room.ReDrawRoom(dictionary);
         }
     }
+
+
 }
