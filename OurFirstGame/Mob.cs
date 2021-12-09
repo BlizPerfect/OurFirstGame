@@ -170,7 +170,7 @@ class Mob : Person
                 }
                 else
                 {
-                    if (Row != 0 && Row != CurrentRoom.Rows - 1)
+                    if (Row != 0 && Row != CurrentRoom.Rows - 1 && !CheckingPerson(-1, 0))
                     {
                         for (var i = 0; i < CurrentRoom.Gates.Count; i++)
                         {
@@ -193,7 +193,7 @@ class Mob : Person
 
                 }
             }
-            else if (pressedKey == 1)
+            else if (pressedKey == 1 && !CheckingPerson(1, 0))
             {
                 if (CheckingRightWall() && !CheckingPerson(1, 0))
                 {
@@ -222,7 +222,7 @@ class Mob : Person
                     }
                 }
             }
-            else if (pressedKey == 2)
+            else if (pressedKey == 2 && !CheckingPerson(0, 1))
             {
                 if (CheckingDownWall() && !CheckingPerson(0, 1))
                 {
@@ -251,7 +251,7 @@ class Mob : Person
                     }
                 }
             }
-            else if (pressedKey == 0)
+            else if (pressedKey == 0 && !CheckingPerson(0, -11))
             {
                 if (CheckingUpWall() && !CheckingPerson(0, -1))
                 {
@@ -289,7 +289,6 @@ class Mob : Person
 
             Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
             Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
 
             Console.SetCursorPosition(130, 8);
             Console.Write("Player global position Row:{0,2}", Row + CurrentRoom.Position.Y);

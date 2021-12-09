@@ -57,14 +57,6 @@ namespace OurFirstGame
             }
             //Console.ReadKey();
 
-            for (var x = 0; x < 1; x++)
-            {
-                Console.SetCursorPosition(0, 40);
-                Console.WriteLine("Итерация: " + x);
-                Console.SetCursorPosition(130, 0);
-                Console.WriteLine("Итерация: " + x);
-
-            }
             //Основа<
             Floor floor1 = new Floor(10);
             floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 0, 10));
@@ -72,7 +64,7 @@ namespace OurFirstGame
 
 
             Player player = new Player(new Point(6, 1), floor1, 0);
-            //floor1.ShowMap(dictionary);
+            floor1.ShowMap(dictionary);
             //Основа>
 
 
@@ -103,7 +95,6 @@ namespace OurFirstGame
 
             while (true)
             {
-                player.ShowPlayerPOV(dictionary);
                 player.Move(dictionary, player);
 
                 var playerCombatState = player.StartCombat();

@@ -51,7 +51,7 @@ abstract class Person
     public void Decomposition(Floor floor, Dictionary<int, string> dictionary)
     {
         floor.Rooms[CurrentRoom.RoomId].Field[Row, Column] = 0;
-        CurrentRoom.ReDrawRoomSeen(dictionary);
+        CurrentRoom.ReDrawRoom(dictionary);
     }
 
     public void PersonDebug(int x, int y)

@@ -172,23 +172,4 @@ class Player : Person
         }
         return (false, new Point(-1, -1));
     }
-
-    public void ShowPlayerPOV(Dictionary<int, string> dictionary)
-    {
-        for (var dy = -1 * POV; dy <= POV; dy++)
-        {
-            for (var dx = -1 * POV; dx <= POV; dx++)
-            {
-                if (Math.Abs(dx) + Math.Abs(dy) > POV) continue;
-                else
-                {
-                    if (CurrentRoom.Position.X + Column + dx >= 0 && CurrentRoom.Position.Y + Row + dy >= 0 && Row + dy < CurrentRoom.Rows && Column + dx < CurrentRoom.Columns && Row + dy >= 0 && Column + dx >= 0)
-                    {
-                        Console.SetCursorPosition(CurrentRoom.Position.X + Column + dx, CurrentRoom.Position.Y + Row + dy);
-                        Console.Write(dictionary[CurrentRoom.Field[Row + dy, Column + dx]]);
-                    }
-                }
-            }
-        }
-    }
 }

@@ -92,21 +92,4 @@ class Room
             Console.WriteLine();
         }
     }
-
-
-    public void ReDrawRoomSeen(Dictionary<int, string> dictionary)
-    {
-        for (int i = 0; i < Rows; i++)
-        {
-            for (int j = 0; j < Columns; j++)
-            {
-                if (SeenField[i, j] == 1)
-                {
-                    Console.SetCursorPosition(Position.X + j, Position.Y + i);
-                    Console.Write(dictionary[Field[i, j]]);
-                }
-            }
-            Console.WriteLine();
-        }
-    }
 }
