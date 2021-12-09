@@ -22,6 +22,7 @@ namespace OurFirstGame
                 Console.WriteLine();
             }
         }
+
         static void Main(string[] args)
         {
             //Выделяем область и жмем Ctrl+K, а затем Ctrl+C.
@@ -66,11 +67,11 @@ namespace OurFirstGame
             }
             //Основа<
             Floor floor1 = new Floor(10);
-            floor1.Mobs.Add(new Mob(new Point(3, 3), floor1, 0, 10));
+            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 0, 10));
             floor1.Mobs.Add(new Mob(new Point(3, 3), floor1, 1, 10));
 
 
-            Player player = new Player(new Point(1, 1), floor1, 0);
+            Player player = new Player(new Point(6, 1), floor1, 0);
             //floor1.ShowMap(dictionary);
             //Основа>
 

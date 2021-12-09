@@ -38,6 +38,8 @@ class Mob : Person
         return false;
     }
 
+
+
     public override void Move(Dictionary<int, string> dictionary, Player player)
     {
         var rnd = new Random();
@@ -175,29 +177,8 @@ class Mob : Person
                             if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                             {
                                 test = true;
-                                Console.SetCursorPosition(130, 6);
-                                Console.Write("i:{0,2}", prevRoom.Gates[i].NextGateId);
+                                Moving(dictionary, i, prevRoom);
 
-                                CurrentRoom.Field[Row, Column] = 0;
-
-                                Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-                                CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-
-                                Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
-
-
-                                ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                                Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                                Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                                CurrentRoom.Field[Row, Column] = Id;
-
-                                previousPlayerRow = Row;
-                                previousPlayerCol = Column;
                             }
                             else if (CheckingLeftTeleport(i))
                             {
@@ -227,29 +208,7 @@ class Mob : Person
                             if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                             {
                                 test = true;
-
-
-                                CurrentRoom.Field[Row, Column] = 0;
-
-                                Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-
-                                CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-
-                                Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
-
-
-                                ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                                Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                                Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                                CurrentRoom.Field[Row, Column] = Id;
-
-                                previousPlayerRow = Row;
-                                previousPlayerCol = Column;
+                                Moving(dictionary, i, prevRoom);
                             }
                             else if (CheckingRightTeleport(i))
                             {
@@ -278,29 +237,7 @@ class Mob : Person
                             if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                             {
                                 test = true;
-
-                                CurrentRoom.Field[Row, Column] = 0;
-
-
-                                Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-
-                                CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-
-                                Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
-
-
-                                ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                                Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                                Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                                CurrentRoom.Field[Row, Column] = Id;
-
-                                previousPlayerRow = Row;
-                                previousPlayerCol = Column;
+                                Moving(dictionary, i, prevRoom);
                             }
                             else if (CheckingDownTeleport(i))
                             {
@@ -328,29 +265,7 @@ class Mob : Person
                         {
                             if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                             {
-                                test = true;
-
-                                CurrentRoom.Field[Row, Column] = 0;
-
-                                Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-
-                                CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
-
-                                Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-                                Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
-
-
-                                ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                                Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                                Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                                CurrentRoom.Field[Row, Column] = Id;
-
-                                previousPlayerRow = Row;
-                                previousPlayerCol = Column;
+                                Moving(dictionary, i, prevRoom);
                             }
                             else if (CheckingUpTeleport(i))
                             {

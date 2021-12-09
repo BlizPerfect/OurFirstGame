@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 abstract class Person
 {
     public int Row;
     public int Column;
+    public int PRow;
+    public int PColumn;
+    public Point GlobalPosition;
     public Floor CurrentFloor;
     public Room CurrentRoom;
     public int Id;
@@ -17,7 +21,29 @@ abstract class Person
         CurrentRoom = newCurrentRoom;
     }
 
+    protected void Moving(Dictionary<int, string> dictionary, int index, Room prevRoom)
+    {
+        CurrentRoom.Field[Row, Column] = 0;
 
+        Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
+        Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
+
+        CurrentRoom.Field[PRow, PColumn] = 0;
+
+        Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
+        Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
+
+
+        ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[index].NextRoomIndex]);
+
+        Row = CurrentRoom.Gates[prevRoom.Gates[index].NextGateId].GatePosition.Y;
+        Column = CurrentRoom.Gates[prevRoom.Gates[index].NextGateId].GatePosition.X;
+
+        CurrentRoom.Field[Row, Column] = Id;
+
+        PRow = Row;
+        PColumn = Column;
+    }
     public bool isDead()
     {
         return HP <= 0;
@@ -25,7 +51,7 @@ abstract class Person
     public void Decomposition(Floor floor, Dictionary<int, string> dictionary)
     {
         floor.Rooms[CurrentRoom.RoomId].Field[Row, Column] = 0;
-        CurrentRoom.ReDrawRoom(dictionary);
+        CurrentRoom.ReDrawRoomSeen(dictionary);
     }
 
     public void PersonDebug(int x, int y)

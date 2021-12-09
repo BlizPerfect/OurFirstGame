@@ -4,15 +4,15 @@ using System.Drawing;
 
 class Player : Person
 {
-    public int PRow;
-    public int PColumn;
     public Player(Point startingPosition, Floor currentFloor, int spawnRoomId)
     {
         Row = startingPosition.Y;
         Column = startingPosition.X;
+        GlobalPosition = startingPosition;
         CurrentFloor = currentFloor;
-        CurrentRoom = CurrentFloor.Rooms[0];
+        CurrentRoom = CurrentFloor.Rooms[spawnRoomId];
         currentFloor.Rooms[spawnRoomId].Field[startingPosition.Y, startingPosition.X] = 8;
+        Id = 8;
         POV = 6;
     }
 
@@ -40,26 +40,7 @@ class Player : Person
                         if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                         {
                             test = true;
-                            Console.SetCursorPosition(130, 6);
-                            Console.Write("i:{0,2}", prevRoom.Gates[i].NextGateId);
-
-                            CurrentRoom.Field[Row, Column] = 0;
-                            Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                            Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[PRow, PColumn] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
-
-                            ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                            Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                            Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                            CurrentRoom.Field[Row, Column] = 8;
-
-                            PRow = Row;
-                            PColumn = Column;
+                            Moving(dictionary, i, prevRoom);
                         }
                         else if (CheckingLeftTeleport(i))
                         {
@@ -89,24 +70,7 @@ class Player : Person
                         if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                         {
                             test = true;
-
-                            CurrentRoom.Field[Row, Column] = 0;
-                            Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                            Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[PRow, PColumn] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
-
-                            ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                            Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                            Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                            CurrentRoom.Field[Row, Column] = 8;
-
-                            PRow = Row;
-                            PColumn = Column;
+                            Moving(dictionary, i, prevRoom);
                         }
                         else if (CheckingRightTeleport(i))
                         {
@@ -135,24 +99,7 @@ class Player : Person
                         if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                         {
                             test = true;
-
-                            CurrentRoom.Field[Row, Column] = 0;
-                            Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                            Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[PRow, PColumn] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
-
-                            ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                            Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                            Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                            CurrentRoom.Field[Row, Column] = 8;
-
-                            PRow = Row;
-                            PColumn = Column;
+                            Moving(dictionary, i, prevRoom);
                         }
                         else if (CheckingDownTeleport(i))
                         {
@@ -181,24 +128,7 @@ class Player : Person
                         if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
                         {
                             test = true;
-
-                            CurrentRoom.Field[Row, Column] = 0;
-                            Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-                            Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-                            Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
-                            CurrentRoom.Field[PRow, PColumn] = 0;
-                            Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
-
-                            ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[i].NextRoomIndex]);
-
-                            Row = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.Y;
-                            Column = CurrentRoom.Gates[prevRoom.Gates[i].NextGateId].GatePosition.X;
-
-                            CurrentRoom.Field[Row, Column] = 8;
-
-                            PRow = Row;
-                            PColumn = Column;
+                            Moving(dictionary, i, prevRoom);
                         }
                         else if (CheckingUpTeleport(i))
                         {
@@ -217,7 +147,7 @@ class Player : Person
         Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
 
         Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-        CurrentRoom.Field[Row, Column] = 8;
+        CurrentRoom.Field[Row, Column] = Id;
         Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
 
         Console.SetCursorPosition(130, 8);
