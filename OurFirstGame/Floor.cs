@@ -9,6 +9,12 @@ class Floor
     public List<Room> Rooms;
     public List<Mob> Mobs = new List<Mob>();
 
+    public static List<int> Walls = new List<int> { 2, 3, 4, 5, 6, 7 };
+    public static List<int> Enemies = new List<int> { 10, 11 };
+
+
+
+
     public Floor(int roomCount)
     {
         //RoomCount = Rnd.Next(6, 11);
@@ -17,7 +23,7 @@ class Floor
         CreateFloor();
     }
 
-    public void CreateGate(Room room1, Room room2, bool isHorizontal)
+    public void CreateGate(Room room1, Room room2, bool isHorizontal, int gateIndex)
     {
         if (isHorizontal)
         {
@@ -32,8 +38,8 @@ class Floor
             room2.Field[index - 1, 0] = 6;
             room2.Field[index, 0] = 0;
             room2.Field[index + 1, 0] = 3;
-            room1.Gates.Add(new Gate(new Point(room1.Columns - 1, index), room2.RoomId, room1.Gates.Count, room2.Gates.Count));
-            room2.Gates.Add(new Gate(new Point(0, index), room1.RoomId, room2.Gates.Count, room1.Gates.Count - 1));
+            room1.Gates.Add(new Gate(new Point(room1.Columns - 1, index), room2.RoomId, gateIndex, gateIndex));
+            room2.Gates.Add(new Gate(new Point(0, index), room1.RoomId, gateIndex, gateIndex));
         }
         else
         {
@@ -48,8 +54,8 @@ class Floor
             room2.Field[0, index - 1] = 6;
             room2.Field[0, index] = 0;
             room2.Field[0, index + 1] = 5;
-            room1.Gates.Add(new Gate(new Point(index, room1.Rows - 1), room2.RoomId, room1.Gates.Count, room2.Gates.Count));
-            room2.Gates.Add(new Gate(new Point(index, 0), room1.RoomId, room2.Gates.Count, room1.Gates.Count - 1));
+            room1.Gates.Add(new Gate(new Point(index, room1.Rows - 1), room2.RoomId, gateIndex, gateIndex));
+            room2.Gates.Add(new Gate(new Point(index, 0), room1.RoomId, gateIndex, gateIndex));
 
         }
         room1.Field[room1.Gates[room1.Gates.Count - 1].GatePosition.Y, room1.Gates[room1.Gates.Count - 1].GatePosition.X] = 9;
@@ -105,11 +111,11 @@ class Floor
                 {
                     if (Rooms[i - 1].HorizontalConection)
                     {
-                        CreateGate(Rooms[i - 1], Rooms[i], true);
+                        CreateGate(Rooms[i - 1], Rooms[i], true, i);
                     }
                     else
                     {
-                        CreateGate(Rooms[i - 1], Rooms[i], false);
+                        CreateGate(Rooms[i - 1], Rooms[i], false, i);
                     }
                 }
             }
@@ -146,5 +152,12 @@ class Floor
         }
     }
 
+    public void ChangePersonPosition(Person person, int dx, int dy)
+    {
+        var oldX = person.Position.X - dx;
+        var oldY = person.Position.Y - dy;
+        person.CurrentRoom.Field[oldX, oldY] = 0;
+        person.CurrentRoom.Field[person.Position.X, person.Position.Y] = 8;
+    }
 
 }

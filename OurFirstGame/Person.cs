@@ -4,13 +4,11 @@ using System.Drawing;
 
 abstract class Person
 {
-    public int Row;
-    public int Column;
-    public int PRow;
-    public int PColumn;
+    public Point Position;
     public Point GlobalPosition;
     public Floor CurrentFloor;
     public Room CurrentRoom;
+
     public int Id;
     public int HP = 200;
     public int Attack = 100;
@@ -21,36 +19,31 @@ abstract class Person
         CurrentRoom = newCurrentRoom;
     }
 
-    protected void Moving(Dictionary<int, string> dictionary, int index, Room prevRoom)
+    public void Teleporting(int x, int y, Dictionary<int, string> dictionary)
     {
-        CurrentRoom.Field[Row, Column] = 0;
+        var gate = CurrentRoom.Gates.Find(x => x.GatePosition.Equals(Position));
 
-        Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-        Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
+        var nextGate = CurrentFloor.Rooms[gate.NextRoomIndex].Gates.Find(x => x.GateId == gate.NextGateId);
 
-        CurrentRoom.Field[PRow, PColumn] = 0;
+        Position.X = nextGate.GatePosition.X;
+        Position.Y = nextGate.GatePosition.Y;
 
-        Console.SetCursorPosition(PColumn + CurrentRoom.Position.X, PRow + CurrentRoom.Position.Y);
-        Console.Write(dictionary[CurrentRoom.Field[PRow, PColumn]]);
-
-
-        ChangeCurrentRoom(CurrentFloor.Rooms[CurrentRoom.Gates[index].NextRoomIndex]);
-
-        Row = CurrentRoom.Gates[prevRoom.Gates[index].NextGateId].GatePosition.Y;
-        Column = CurrentRoom.Gates[prevRoom.Gates[index].NextGateId].GatePosition.X;
-
-        CurrentRoom.Field[Row, Column] = Id;
-
-        PRow = Row;
-        PColumn = Column;
+        CurrentRoom.Field[y, x] = 0;
+        CurrentRoom.ReDrawOneCell(x, y, dictionary);
+        ChangeCurrentRoom(CurrentFloor.Rooms[gate.NextRoomIndex]);
+        CurrentRoom.Field[Position.Y, Position.X] = Id;
+        CurrentRoom.ChangePlayerPosition(new Point(Position.X, Position.Y),
+            Position,
+            dictionary);
     }
+
     public bool isDead()
     {
         return HP <= 0;
     }
     public void Decomposition(Floor floor, Dictionary<int, string> dictionary)
     {
-        floor.Rooms[CurrentRoom.RoomId].Field[Row, Column] = 0;
+        //floor.Rooms[CurrentRoom.RoomId].Field[Row, Position.X] = 0;
         CurrentRoom.ReDrawRoom(dictionary);
     }
 
@@ -59,9 +52,9 @@ abstract class Person
         Console.SetCursorPosition(x, y);
         Console.Write("Current room ID: " + CurrentRoom.RoomId);
         Console.SetCursorPosition(x, y + 1);
-        Console.Write("Person Row:{0,2}", Row);
+        Console.Write("Person Row:{0,2}", Position.Y);
         Console.SetCursorPosition(x, y + 2);
-        Console.Write("Person Column:{0,2}", Column);
+        Console.Write("Person Position.X:{0,2}", Position.X);
         var ind = y + 2;
         foreach (var nextRoomId in CurrentRoom.Gates)
         {
@@ -72,61 +65,94 @@ abstract class Person
         Console.SetCursorPosition(0, 0);
     }
 
-    public abstract void Move(Dictionary<int, string> dictionary, Player player);
+    public abstract void Move(Dictionary<int, string> dictionary);
 
     public bool CheckingPerson(int x, int y)
     {
-        return (CheckingEnemy(x, y) || CheckingPlayer(x, y));
+        return (CheckingPlayer(x, y) || CheckingEnemy(x, y));
     }
     public bool CheckingEnemy(int x, int y)
     {
-        if (CurrentRoom.Columns <= Column + x || 0 > Column + x)
+        if (CurrentRoom.Position.X <= Position.X + x || 0 > Position.X + x)
         {
             x = 0;
         }
-        else if (CurrentRoom.Rows <= Row + y || 0 > Row + y)
+        else if (CurrentRoom.Rows <= Position.Y + y || 0 > Position.Y + y)
         {
             y = 0;
         }
-        return Mob.MobsList.Contains(CurrentRoom.Field[Row + y, Column + x]);
+        return Mob.MobsList.Contains(CurrentRoom.Field[Position.Y + y, Position.X + x]);
     }
     public bool CheckingPlayer(int x, int y)
     {
-        return CurrentRoom.Field[Row + y, Column + x] == 8;
+        return CurrentRoom.Field[Position.Y + y, Position.X + x] == 8;
     }
 
     public bool CheckingRightWall()
     {
-        return (Column < CurrentRoom.Columns - 2 && (Row < CurrentRoom.Rows - 1 && Row > 0));
+        return (Position.X < CurrentRoom.Columns - 2 && (Position.Y < CurrentRoom.Rows - 1 && Position.Y > 0));
     }
 
     public bool CheckingLeftWall()
     {
-        return (Column > 1 && (Row < CurrentRoom.Rows - 1 && Row > 0));
+        return (Position.X > 1 && (Position.Y < CurrentRoom.Rows - 1 && Position.Y > 0));
     }
 
     public bool CheckingDownWall()
     {
-        return (Row < CurrentRoom.Rows - 2 && (Column > 0 && Column < CurrentRoom.Columns - 1));
+        return (Position.Y < CurrentRoom.Rows - 2 && (Position.X > 0 && Position.X < CurrentRoom.Columns - 1));
     }
     public bool CheckingUpWall()
     {
-        return (Row > 1 && (Column > 0 && Column < CurrentRoom.Columns - 1));
+        return (Position.Y > 1 && (Position.X > 0 && Position.X < CurrentRoom.Columns - 1));
     }
     public bool CheckingLeftTeleport(int i)
     {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column - 1);
+        return (CurrentRoom.Gates[i].GatePosition.Y == Position.Y && CurrentRoom.Gates[i].GatePosition.X == Position.X - 1);
     }
     public bool CheckingRightTeleport(int i)
     {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column + 1);
+        return (CurrentRoom.Gates[i].GatePosition.Y == Position.Y && CurrentRoom.Gates[i].GatePosition.X == Position.X + 1);
     }
     public bool CheckingDownTeleport(int i)
     {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row + 1 && CurrentRoom.Gates[i].GatePosition.X == Column);
+        return (CurrentRoom.Gates[i].GatePosition.Y == Position.Y + 1 && CurrentRoom.Gates[i].GatePosition.X == Position.X);
     }
     public bool CheckingUpTeleport(int i)
     {
-        return (CurrentRoom.Gates[i].GatePosition.Y == Row - 1 && CurrentRoom.Gates[i].GatePosition.X == Column);
+        return (CurrentRoom.Gates[i].GatePosition.Y == Position.Y - 1 && CurrentRoom.Gates[i].GatePosition.X == Position.X);
+    }
+
+    public bool CheckArrayLimits(int dx, int dy)
+    {
+        return (Position.X + dx >= 0 &&
+            Position.X + dx < CurrentRoom.Columns &&
+            Position.Y + dy >= 0 &&
+            Position.Y + dy < CurrentRoom.Rows);
+    }
+
+    public bool CheckArrayEnemies(int x, int y)
+    {
+        return !Floor.Enemies.Contains(CurrentRoom.Field[y, x]);
+    }
+    public bool CheckArrayPlayer(int x, int y)
+    {
+        return CurrentRoom.Field[y, x] == 8;
+    }
+    public bool CheckArrayWalls(int x, int y)
+    {
+        return !Floor.Walls.Contains(CurrentRoom.Field[y, x]);
+    }
+
+    public bool CheckGate(int x, int y)
+    {
+        foreach (var gate in CurrentRoom.Gates)
+        {
+            if (gate.GatePosition.X == x && gate.GatePosition.Y == y)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

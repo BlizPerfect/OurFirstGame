@@ -14,8 +14,9 @@ class Mob : Person
     public bool SawPlayer = false;
     public Mob(Point startingPosition, Floor currentFloor, int spawnRoomId, int id)
     {
-        Row = startingPosition.Y;
-        Column = startingPosition.X;
+        Position.Y = startingPosition.Y;
+        Position.X = startingPosition.X;
+
         CurrentFloor = currentFloor;
         CurrentRoom = CurrentFloor.Rooms[spawnRoomId];
         currentFloor.Rooms[spawnRoomId].Field[startingPosition.Y, startingPosition.X] = 10;
@@ -29,7 +30,7 @@ class Mob : Person
         {
             for (var dx = -1 * POV; dx <= POV; dx++)
             {
-                if (player.Column == Column + dx && player.Row == Row + dy && player.CurrentRoom == CurrentRoom)
+                if (player.Position.X == Position.X + dx && player.Position.Y == Position.Y + dy && player.CurrentRoom == CurrentRoom)
                 {
                     return true;
                 }
@@ -38,264 +39,80 @@ class Mob : Person
         return false;
     }
 
-
-
-    public override void Move(Dictionary<int, string> dictionary, Player player)
+    public override void Move(Dictionary<int, string> dictionary)
     {
+        // 0
+        //3 1
+        // 2
         var rnd = new Random();
+        var pressedKey = rnd.Next(0, 4);
 
-        PersonDebug(130, 30);
+        var oldPlayerPostionX = Position.X;
+        var oldPlayerPostionY = Position.Y;
 
-        //var pressedKey = rnd.Next(0, 4);
-        //var pressedKey = 0;
-        var pressedKeyMassive = new List<int>();
-        if (!SawPlayer)
+        var probPlayerPostionX = Position.X;
+        var probPlayerPostionY = Position.Y;
+
+        if (pressedKey.Equals(3))
         {
-            SawPlayer = CanSeePlayer(player);
-        }
-        if (SawPlayer)
-        {
-            if (player.CurrentRoom == CurrentRoom)
+            if (CheckArrayLimits(-1, 0))
             {
-                if (player.PColumn > Column)
-                {
-                    pressedKeyMassive.Add(1);
-                    if (player.PRow > Row)
-                    {
-                        pressedKeyMassive.Add(2);
-                    }
-                    else if (player.PRow < Row)
-                    {
-                        pressedKeyMassive.Add(0);
-                    }
-                }
-                else if (player.PColumn < Column)
-                {
-                    pressedKeyMassive.Add(3);
-                    if (player.PRow > Row)
-                    {
-                        pressedKeyMassive.Add(2);
-                    }
-                    else if (player.PRow < Row)
-                    {
-                        pressedKeyMassive.Add(0);
-                    }
-                }
-                else
-                {
-                    if (player.PRow > Row)
-                    {
-                        pressedKeyMassive.Add(2);
-                    }
-                    else if (player.PRow < Row)
-                    {
-                        pressedKeyMassive.Add(0);
-                    }
-                }
+                probPlayerPostionX -= 1;
             }
-            else
+            else if (CheckGate(Position.X, Position.Y))
             {
-                var gate = CurrentRoom.Gates.Find(x => x.NextRoomIndex == player.CurrentRoom.RoomId);
-                if (gate.GatePosition.X == Column && gate.GatePosition.Y == Row)
-                {
-                    if (gate.GatePosition.X == 0)
-                    {
-                        pressedKeyMassive.Add(3);
-                    }
-                    else if (gate.GatePosition.X == CurrentRoom.Columns - 1)
-                    {
-                        pressedKeyMassive.Add(1);
-                    }
-                    else if (gate.GatePosition.Y == 0)
-                    {
-                        pressedKeyMassive.Add(0);
-                    }
-                    else if (gate.GatePosition.Y == CurrentRoom.BottomRow - 1)
-                    {
-                        pressedKeyMassive.Add(2);
-                    }
-                }
-                else if (gate.GatePosition.X > Column)
-                {
-                    pressedKeyMassive.Add(1);
-                    if (gate.GatePosition.Y > Row)
-                    {
-                        pressedKeyMassive.Add(2);
-                    }
-                    else if (gate.GatePosition.Y < Row)
-                    {
-                        pressedKeyMassive.Add(0);
-                    }
-                }
-                else if (gate.GatePosition.X < Column)
-                {
-                    pressedKeyMassive.Add(3);
-                    if (gate.GatePosition.Y > Row)
-                    {
-                        pressedKeyMassive.Add(2);
-                    }
-                    else if (gate.GatePosition.Y < Row)
-                    {
-                        pressedKeyMassive.Add(0);
-                    }
-                }
-                else
-                {
-                    if (gate.GatePosition.Y > Row)
-                    {
-                        pressedKeyMassive.Add(2);
-                    }
-                    else if (gate.GatePosition.Y < Row)
-                    {
-                        pressedKeyMassive.Add(0);
-                    }
-                }
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
             }
         }
-        else
+        else if (pressedKey.Equals(1))
         {
-            pressedKeyMassive.Add(rnd.Next(0, 4));
+            if (CheckArrayLimits(1, 0))
+            {
+                probPlayerPostionX += 1;
+            }
+            else if (CheckGate(Position.X, Position.Y))
+            {
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
+            }
+
         }
-        foreach (var pressedKey in pressedKeyMassive)
+        else if (pressedKey.Equals(2))
         {
-            bool test = false;
-            var prevRoom = CurrentRoom;
-            int previousPlayerRow = Row;
-            int previousPlayerCol = Column;
-            if (pressedKey == 3)
+            if (CheckArrayLimits(0, 1))
             {
-                if (CheckingLeftWall() && !CheckingPerson(-1, 0))
-                {
-                    Column -= 1;
-                }
-                else
-                {
-                    if (Row != 0 && Row != CurrentRoom.Rows - 1 && !CheckingPerson(-1, 0))
-                    {
-                        for (var i = 0; i < CurrentRoom.Gates.Count; i++)
-                        {
-                            if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
-                            {
-                                test = true;
-                                Moving(dictionary, i, prevRoom);
-
-                            }
-                            else if (CheckingLeftTeleport(i))
-                            {
-                                Column -= 1;
-                            }
-                            if (test)
-                            {
-                                break;
-                            }
-                        }
-                    }
-
-                }
+                probPlayerPostionY += 1;
             }
-            else if (pressedKey == 1 && !CheckingPerson(1, 0))
+            else if (CheckGate(Position.X, Position.Y))
             {
-                if (CheckingRightWall() && !CheckingPerson(1, 0))
-                {
-                    Column += 1;
-                }
-                else
-                {
-                    if (Row != 0 && Row != CurrentRoom.Rows - 1)
-                    {
-                        for (var i = 0; i < CurrentRoom.Gates.Count; i++)
-                        {
-                            if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
-                            {
-                                test = true;
-                                Moving(dictionary, i, prevRoom);
-                            }
-                            else if (CheckingRightTeleport(i))
-                            {
-                                Column += 1;
-                            }
-                            if (test)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
             }
-            else if (pressedKey == 2 && !CheckingPerson(0, 1))
+        }
+        else if (pressedKey.Equals(0))
+        {
+            if (CheckArrayLimits(0, -1))
             {
-                if (CheckingDownWall() && !CheckingPerson(0, 1))
-                {
-                    Row += 1;
-                }
-                else
-                {
-                    if (Column != 0 && Column != CurrentRoom.Columns - 1)
-                    {
-                        for (var i = 0; i < CurrentRoom.Gates.Count; i++)
-                        {
-                            if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
-                            {
-                                test = true;
-                                Moving(dictionary, i, prevRoom);
-                            }
-                            else if (CheckingDownTeleport(i))
-                            {
-                                Row += 1;
-                            }
-                            if (test)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
+                probPlayerPostionY -= 1;
             }
-            else if (pressedKey == 0 && !CheckingPerson(0, -11))
+            else if (CheckGate(Position.X, Position.Y))
             {
-                if (CheckingUpWall() && !CheckingPerson(0, -1))
-                {
-                    Row -= 1;
-                }
-                else
-                {
-                    if (Column != 0 && Column != CurrentRoom.Columns - 1)
-                    {
-                        for (var i = 0; i < CurrentRoom.Gates.Count; i++)
-                        {
-                            if (CurrentRoom.Gates[i].GatePosition.Y == Row && CurrentRoom.Gates[i].GatePosition.X == Column)
-                            {
-                                Moving(dictionary, i, prevRoom);
-                            }
-                            else if (CheckingUpTeleport(i))
-                            {
-                                Row -= 1;
-                            }
-                            if (test)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
             }
-            CurrentRoom.Field[previousPlayerRow, previousPlayerCol] = 0;
+        }
 
-            Console.SetCursorPosition(previousPlayerCol + CurrentRoom.Position.X, previousPlayerRow + CurrentRoom.Position.Y);
-            Console.Write(dictionary[CurrentRoom.Field[previousPlayerRow, previousPlayerCol]]);
-
-
-            CurrentRoom.Field[Row, Column] = Id;
-
-            Console.SetCursorPosition(Column + CurrentRoom.Position.X, Row + CurrentRoom.Position.Y);
-            Console.Write(dictionary[CurrentRoom.Field[Row, Column]]);
-
-            Console.SetCursorPosition(130, 8);
-            Console.Write("Player global position Row:{0,2}", Row + CurrentRoom.Position.Y);
-            Console.SetCursorPosition(130, 9);
-            Console.Write("Player global position Column:{0,2}", Column + CurrentRoom.Position.X);
-
-            Console.SetCursorPosition(0, 0);
+        if (!CheckArrayPlayer(probPlayerPostionX, probPlayerPostionY) && CheckArrayEnemies(probPlayerPostionX, probPlayerPostionY) &&
+            CheckArrayWalls(probPlayerPostionX, probPlayerPostionY))
+        {
+            Position.X = probPlayerPostionX;
+            Position.Y = probPlayerPostionY;
+            CurrentRoom.Field[oldPlayerPostionY, oldPlayerPostionX] = 0;
+            CurrentRoom.Field[Position.Y, Position.X] = Id;
+            CurrentRoom.ChangePlayerPosition(new Point(oldPlayerPostionX, oldPlayerPostionY),
+                Position,
+                dictionary);
         }
     }
 }

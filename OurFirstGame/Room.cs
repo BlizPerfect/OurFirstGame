@@ -92,4 +92,21 @@ class Room
             Console.WriteLine();
         }
     }
+
+    public void ReDrawOneCell(int x, int y, Dictionary<int, string> dictionary)
+    {
+
+        Console.SetCursorPosition(Position.X + x, Position.Y + y);
+        Console.Write(dictionary[Field[y, x]]);
+    }
+
+    public void ChangePlayerPosition(Point oldPlayerPosition, Point playerPosition, Dictionary<int, string> dictionary)
+    {
+        Console.SetCursorPosition(Position.X + oldPlayerPosition.X, Position.Y + oldPlayerPosition.Y);
+        Console.Write(dictionary[Field[oldPlayerPosition.Y, oldPlayerPosition.X]]);
+
+        Console.SetCursorPosition(Position.X + playerPosition.X, Position.Y + playerPosition.Y);
+        Console.Write(dictionary[Field[playerPosition.Y, playerPosition.X]]);
+    }
+
 }

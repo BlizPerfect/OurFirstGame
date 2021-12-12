@@ -25,8 +25,7 @@ namespace OurFirstGame
 
         static void Main(string[] args)
         {
-            //Выделяем область и жмем Ctrl+K, а затем Ctrl+C.
-            //Обратное раскомментирование Ctrl - K, а затем Ctrl - U.
+            //ctrl+shift+/
             var dictionary = new Dictionary<int, string>
             {
                 {0,"."},
@@ -59,11 +58,14 @@ namespace OurFirstGame
 
             //Основа<
             Floor floor1 = new Floor(10);
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 0, 10));
+            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 1, 10));
             floor1.Mobs.Add(new Mob(new Point(3, 3), floor1, 1, 10));
+            floor1.Mobs.Add(new Mob(new Point(2, 2), floor1, 1, 10));
+            //floor1.Mobs.Add(new Mob(new Point(1, 3), floor1, 1, 10));
 
 
-            Player player = new Player(new Point(6, 1), floor1, 0);
+            Player player = new Player(new Point(1, 1), floor1, 0);
+
             floor1.ShowMap(dictionary);
             //Основа>
 
@@ -95,30 +97,33 @@ namespace OurFirstGame
 
             while (true)
             {
-                player.Move(dictionary, player);
-
-                var playerCombatState = player.StartCombat();
-                if (playerCombatState.Item1)
-                {
-                    foreach (var mob in floor1.Mobs)
-                    {
-                        if (mob.Column == player.Column + playerCombatState.Item2.X && mob.Row == player.Row + playerCombatState.Item2.Y)
-                        {
-                            var enemy = mob;
-                            enemy.HP -= player.Attack;
-                            if (enemy.isDead())
-                            {
-                                enemy.Decomposition(floor1, dictionary);
-                                floor1.Mobs.Remove(enemy);
-                                break;
-                            }
-                        }
-                    }
-                }
+                player.Move(dictionary);
                 foreach (var enemy in floor1.Mobs)
                 {
-                    enemy.Move(dictionary, player);
+                    enemy.Move(dictionary);
                 }
+
+
+
+                //var playerCombatState = player.StartCombat();
+                //if (playerCombatState.Item1)
+                //{
+                //    foreach (var mob in floor1.Mobs)
+                //    {
+                //        if (mob.Position.X == player.Position.X + playerCombatState.Item2.X && mob.Position.Y == player.Position.Y + playerCombatState.Item2.Y)
+                //        {
+                //            var enemy = mob;
+                //            enemy.HP -= player.Attack;
+                //            if (enemy.isDead())
+                //            {
+                //                enemy.Decomposition(floor1, dictionary);
+                //                floor1.Mobs.Remove(enemy);
+                //                break;
+                //            }
+                //        }
+                //    }
+                //}
+
             }
         }
     }
