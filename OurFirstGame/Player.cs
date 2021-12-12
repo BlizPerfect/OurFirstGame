@@ -8,8 +8,7 @@ class Player : Person
     {
         Position.Y = startingPosition.Y;
         Position.X = startingPosition.X;
-
-        GlobalPosition = startingPosition;
+        PreviousPosition = Position;
         CurrentFloor = currentFloor;
         CurrentRoom = CurrentFloor.Rooms[spawnRoomId];
         currentFloor.Rooms[spawnRoomId].Field[startingPosition.Y, startingPosition.X] = 8;
@@ -17,7 +16,7 @@ class Player : Person
         POV = 6;
     }
 
-    public override void Move(Dictionary<int, string> dictionary)
+    public override void Move(Dictionary<int, string> dictionary, Player player)
     {
         PersonDebug(130, 10);
         var pressedKey = Console.ReadKey().Key;
@@ -34,7 +33,7 @@ class Player : Person
             {
                 probPlayerPostionX -= 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
@@ -46,7 +45,7 @@ class Player : Person
             {
                 probPlayerPostionX += 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
@@ -59,7 +58,7 @@ class Player : Person
             {
                 probPlayerPostionY += 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
@@ -71,7 +70,7 @@ class Player : Person
             {
                 probPlayerPostionY -= 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
@@ -81,6 +80,7 @@ class Player : Person
         if (CheckArrayEnemies(probPlayerPostionX, probPlayerPostionY) &&
             CheckArrayWalls(probPlayerPostionX, probPlayerPostionY))
         {
+            PreviousPosition = Position;
             Position.X = probPlayerPostionX;
             Position.Y = probPlayerPostionY;
             CurrentRoom.Field[oldPlayerPostionY, oldPlayerPostionX] = 0;
@@ -91,18 +91,5 @@ class Player : Person
         }
     }
 
-    public (bool, Point) StartCombat()
-    {
-        for (var dy = -1; dy <= 1; dy++)
-        {
-            for (var dx = -1; dx <= 1; dx++)
-            {
-                if (CheckingEnemy(dx, dy))
-                {
-                    return (true, new Point(dx, dy));
-                }
-            }
-        }
-        return (false, new Point(-1, -1));
-    }
+
 }

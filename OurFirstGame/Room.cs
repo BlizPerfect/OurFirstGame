@@ -34,7 +34,6 @@ class Room
     {
         CreateBorders();
     }
-
     public void CreateBorders()
     {
         //Создаем основные стены
@@ -95,7 +94,6 @@ class Room
 
     public void ReDrawOneCell(int x, int y, Dictionary<int, string> dictionary)
     {
-
         Console.SetCursorPosition(Position.X + x, Position.Y + y);
         Console.Write(dictionary[Field[y, x]]);
     }
@@ -108,5 +106,4 @@ class Room
         Console.SetCursorPosition(Position.X + playerPosition.X, Position.Y + playerPosition.Y);
         Console.Write(dictionary[Field[playerPosition.Y, playerPosition.X]]);
     }
-
 }

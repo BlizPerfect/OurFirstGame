@@ -4,18 +4,13 @@ using System.Drawing;
 
 class Mob : Person
 {
-    public static List<int> MobsList = new List<int> { 10, 11 };
-    public static List<int> MoveSidesList = new List<int> { 0,//Вверх
-        1,//Вправо
-        2,//Вниз
-        3//Влево
-         };
-
     public bool SawPlayer = false;
+
     public Mob(Point startingPosition, Floor currentFloor, int spawnRoomId, int id)
     {
         Position.Y = startingPosition.Y;
         Position.X = startingPosition.X;
+        PreviousPosition = Position;
 
         CurrentFloor = currentFloor;
         CurrentRoom = CurrentFloor.Rooms[spawnRoomId];
@@ -39,13 +34,13 @@ class Mob : Person
         return false;
     }
 
-    public override void Move(Dictionary<int, string> dictionary)
+    public override void Move(Dictionary<int, string> dictionary, Player player)
     {
-        // 0
-        //3 1
-        // 2
+        //8 0 5
+        //3 x 1
+        //7 2 6
         var rnd = new Random();
-        var pressedKey = rnd.Next(0, 4);
+        var pressedKey = -1;
 
         var oldPlayerPostionX = Position.X;
         var oldPlayerPostionY = Position.Y;
@@ -53,13 +48,107 @@ class Mob : Person
         var probPlayerPostionX = Position.X;
         var probPlayerPostionY = Position.Y;
 
+        if (!SawPlayer)
+        {
+            pressedKey = rnd.Next(0, 4);
+            SawPlayer = CanSeePlayer(player);
+        }
+        else if (CurrentRoom == player.CurrentRoom)
+        {
+            if (player.PreviousPosition.X == Position.X & player.PreviousPosition.Y < Position.Y)
+            {
+                pressedKey = 0;
+            }
+            else if (player.PreviousPosition.X > Position.X & player.PreviousPosition.Y < Position.Y)
+            {
+                pressedKey = 5;
+            }
+            else if (player.PreviousPosition.X > Position.X & player.PreviousPosition.Y == Position.Y)
+            {
+                pressedKey = 1;
+            }
+            else if (player.PreviousPosition.X > Position.X & player.PreviousPosition.Y > Position.Y)
+            {
+                pressedKey = 6;
+            }
+            else if (player.PreviousPosition.X == Position.X & player.PreviousPosition.Y > Position.Y)
+            {
+                pressedKey = 2;
+            }
+            else if (player.PreviousPosition.X < Position.X & player.PreviousPosition.Y > Position.Y)
+            {
+                pressedKey = 7;
+            }
+            else if (player.PreviousPosition.X < Position.X & player.PreviousPosition.Y == Position.Y)
+            {
+                pressedKey = 3;
+            }
+            else if (player.PreviousPosition.X < Position.X & player.PreviousPosition.Y < Position.Y)
+            {
+                pressedKey = 8;
+            }
+            else
+            {
+                //pass
+            }
+        }
+        else if (SawPlayer && Math.Abs(CurrentRoom.RoomId - player.CurrentRoom.RoomId) == 1)
+        {
+            var gate = CurrentRoom.Gates.Find(x => x.NextRoomIndex == player.CurrentRoom.RoomId);
+            if (gate.GatePosition.X == Position.X && gate.GatePosition.Y == Position.Y)
+            {
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
+            }
+            if (gate.GatePosition.X == Position.X && gate.GatePosition.Y < Position.Y)
+            {
+                pressedKey = 0;
+            }
+            else if (gate.GatePosition.X > Position.X && gate.GatePosition.Y < Position.Y)
+            {
+                pressedKey = 5;
+            }
+            else if (gate.GatePosition.X > Position.X && gate.GatePosition.Y == Position.Y)
+            {
+                pressedKey = 1;
+            }
+            else if (gate.GatePosition.X > Position.X && gate.GatePosition.Y > Position.Y)
+            {
+                pressedKey = 6;
+            }
+            else if (gate.GatePosition.X == Position.X && gate.GatePosition.Y > Position.Y)
+            {
+                pressedKey = 2;
+            }
+            else if (gate.GatePosition.X < Position.X && gate.GatePosition.Y > Position.Y)
+            {
+                pressedKey = 7;
+            }
+            else if (gate.GatePosition.X < Position.X && gate.GatePosition.Y == Position.Y)
+            {
+                pressedKey = 3;
+            }
+            else if (gate.GatePosition.X < Position.X && gate.GatePosition.Y < Position.Y)
+            {
+                pressedKey = 8;
+            }
+            else
+            {
+                //pass
+            }
+        }
+        else if (Math.Abs(CurrentRoom.RoomId - player.CurrentRoom.RoomId) > 1)
+        {
+            SawPlayer = false;
+        }
+
         if (pressedKey.Equals(3))
         {
             if (CheckArrayLimits(-1, 0))
             {
                 probPlayerPostionX -= 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
@@ -71,12 +160,11 @@ class Mob : Person
             {
                 probPlayerPostionX += 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
             }
-
         }
         else if (pressedKey.Equals(2))
         {
@@ -84,7 +172,7 @@ class Mob : Person
             {
                 probPlayerPostionY += 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
@@ -96,7 +184,59 @@ class Mob : Person
             {
                 probPlayerPostionY -= 1;
             }
-            else if (CheckGate(Position.X, Position.Y))
+            else if (CheckGatePlacement(Position.X, Position.Y))
+            {
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
+            }
+        }
+        else if (pressedKey.Equals(5))
+        {
+            if (CheckArrayLimits(1, -1))
+            {
+                probPlayerPostionX += 1;
+                probPlayerPostionY += -1;
+            }
+            else if (CheckGatePlacement(Position.X, Position.Y))
+            {
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
+            }
+        }
+        else if (pressedKey.Equals(6))
+        {
+            if (CheckArrayLimits(1, 1))
+            {
+                probPlayerPostionX += 1;
+                probPlayerPostionY += 1;
+            }
+            else if (CheckGatePlacement(Position.X, Position.Y))
+            {
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
+            }
+        }
+        else if (pressedKey.Equals(7))
+        {
+            if (CheckArrayLimits(-1, 1))
+            {
+                probPlayerPostionX += -1;
+                probPlayerPostionY += 1;
+            }
+            else if (CheckGatePlacement(Position.X, Position.Y))
+            {
+                Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
+                return;
+            }
+        }
+        else if (pressedKey.Equals(8))
+        {
+            if (CheckArrayLimits(-1, -1))
+            {
+                probPlayerPostionX += -1;
+                probPlayerPostionY += -1;
+            }
+            else if (CheckGatePlacement(Position.X, Position.Y))
             {
                 Teleporting(oldPlayerPostionX, oldPlayerPostionY, dictionary);
                 return;
@@ -104,8 +244,9 @@ class Mob : Person
         }
 
         if (!CheckArrayPlayer(probPlayerPostionX, probPlayerPostionY) && CheckArrayEnemies(probPlayerPostionX, probPlayerPostionY) &&
-            CheckArrayWalls(probPlayerPostionX, probPlayerPostionY))
+        CheckArrayWalls(probPlayerPostionX, probPlayerPostionY))
         {
+            PreviousPosition = Position;
             Position.X = probPlayerPostionX;
             Position.Y = probPlayerPostionY;
             CurrentRoom.Field[oldPlayerPostionY, oldPlayerPostionX] = 0;

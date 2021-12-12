@@ -3,9 +3,6 @@ using System.Drawing;
 
 class Gate
 {
-    // 0
-    //3 1
-    // 2
     public Point GatePosition;
     public int GateId;
     public int NextRoomIndex;

@@ -12,9 +12,6 @@ class Floor
     public static List<int> Walls = new List<int> { 2, 3, 4, 5, 6, 7 };
     public static List<int> Enemies = new List<int> { 10, 11 };
 
-
-
-
     public Floor(int roomCount)
     {
         //RoomCount = Rnd.Next(6, 11);
