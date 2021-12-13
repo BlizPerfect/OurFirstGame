@@ -4,20 +4,80 @@ using System.Drawing;
 
 class Floor
 {
+    public int FloorLevel;
     public Random Rnd = new Random();
     public int RoomCount;
     public List<Room> Rooms;
     public List<Mob> Mobs = new List<Mob>();
+    public List<Mob> Graveyard = new List<Mob>();
+
+    public Ladder Ladder;
 
     public static List<int> Walls = new List<int> { 2, 3, 4, 5, 6, 7 };
-    public static List<int> Enemies = new List<int> { 10, 11 };
+    public static List<int> WallsExtended = new List<int> { 2, 3, 4, 5, 6, 7, 99 };
+    public static List<int> Enemies = new List<int> { 10, 11, 12, 13, 14, 15 };
 
-    public Floor(int roomCount)
+    public Floor(int roomCount, int floorLevel)
     {
         //RoomCount = Rnd.Next(6, 11);
+        FloorLevel = floorLevel;
         RoomCount = roomCount;
         Rooms = new List<Room>();
         CreateFloor();
+        PlaceLadder();
+        PlaceMobs();
+        PlaceLoot();
+    }
+
+    public void PlaceLoot()
+    {
+
+    }
+
+    private void PlaceMobs()
+    {
+        foreach (var room in Rooms)
+        {
+            if (room.RoomId == 0)
+            {
+                continue;
+            }
+            if (Rnd.Next(100) < 66)
+            {
+                var chance = Rnd.Next(100);
+                var tempPosition = new Point(Rnd.Next(1, room.Columns - 2), Rnd.Next(1, room.Rows - 2));
+                while (room.Field[tempPosition.Y, tempPosition.X] == 1)
+                {
+                    tempPosition = new Point(Rnd.Next(1, room.Columns - 2), Rnd.Next(1, room.Rows - 2));
+                }
+                if (chance + FloorLevel < Death.Chance)
+                {
+                    Mobs.Add(new Death(tempPosition, this, room.RoomId, 12));
+                }
+                else if (chance + FloorLevel < Knight.Chance)
+                {
+                    Mobs.Add(new Knight(tempPosition, this, room.RoomId, 14));
+                }
+                else if (chance + FloorLevel < Alligator.Chance)
+                {
+                    Mobs.Add(new Alligator(tempPosition, this, room.RoomId, 13));
+                }
+                else if (chance + FloorLevel < Snake.Chance)
+                {
+                    Mobs.Add(new Snake(tempPosition, this, room.RoomId, 11));
+                }
+                else
+                {
+                    Mobs.Add(new Zombie(tempPosition, this, room.RoomId, 10));
+                }
+            }
+        }
+    }
+
+    public void PlaceLadder()
+    {
+        Rooms[RoomCount - 1].Field[2, 5] = 99;
+        Ladder = new Ladder(new Point(5, 2), RoomCount - 1);
     }
 
     public void CreateGate(Room room1, Room room2, bool isHorizontal, int gateIndex)

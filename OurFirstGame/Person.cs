@@ -9,11 +9,13 @@ abstract class Person
     public Floor CurrentFloor;
     public Room CurrentRoom;
 
-    public int Id;
-    public int HP = 200;
-    public int Attack = 100;
-    public int POV;
 
+    public int Id;
+    public int HP;
+    public int Attack;
+    public int Armor;
+    public int Dexterity;
+    public int POV;
 
     public void ChangeCurrentRoom(Room newCurrentRoom)
     {
@@ -46,9 +48,9 @@ abstract class Person
     {
         return HP <= 0;
     }
-    public void Decomposition(Floor floor, Dictionary<int, string> dictionary)
+    public void Decomposition(Dictionary<int, string> dictionary)
     {
-        floor.Rooms[CurrentRoom.RoomId].Field[Position.Y, Position.X] = 0;
+        CurrentFloor.Rooms[CurrentRoom.RoomId].Field[Position.Y, Position.X] = 0;
         CurrentRoom.ReDrawOneCell(Position.X, Position.Y, dictionary);
     }
 
@@ -97,6 +99,10 @@ abstract class Person
     public bool CheckArrayWalls(int x, int y)
     {
         return !Floor.Walls.Contains(CurrentRoom.Field[y, x]);
+    }
+    public bool CheckArrayWallsExtended(int x, int y)
+    {
+        return !Floor.WallsExtended.Contains(CurrentRoom.Field[y, x]);
     }
 
     public bool CheckGatePlacement(int x, int y)

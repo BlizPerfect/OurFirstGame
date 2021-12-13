@@ -13,6 +13,8 @@ namespace OurFirstGame
         static void Main(string[] args)
         {
             //ctrl+shift+/
+            var randomazer = new Random();
+            var broadcaster = new Broadcaster();
             var dictionary = new Dictionary<int, string>
             {
                 {0,"."},
@@ -25,35 +27,98 @@ namespace OurFirstGame
                 {7,"║" },
                 {8,"@" },//Player
                 {9, "."},//Teleport
-                {10,"X" },//Zombie
-                {11,"S"}//Snake
+                {10,"Z" },//Zombie
+                {11,"S"},//Snake
+                {12,"D"},//D.E.A.T.H
+                {13,"A"},//Аlligator
+                {14,"K"},//Knight
+                {15,"G"},//Goblin
+                {99,"X"}//NextFloor
             };
 
             //Основа<
-            Floor floor1 = new Floor(10);
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 1, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 2, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 3, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 4, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 5, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 6, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 7, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 8, 10));
-            floor1.Mobs.Add(new Mob(new Point(1, 1), floor1, 9, 10));
+            var deep = 1;
+            Floor floor = new Floor(randomazer.Next(8, 11), 50);
 
-            Player player = new Player(new Point(1, 1), floor1, 0);
+            Player player = new Player(new Point(1, 1), floor, 0);
 
-            floor1.ShowMap(dictionary);
+            floor.ShowMap(dictionary);
             //Основа>
 
-            while (true)
+            while (!player.isDead())
             {
                 player.Move(dictionary, player);
-                foreach (var enemy in floor1.Mobs)
+                if (player.CheckLaddePlacement())
+                {
+                    deep += 1;
+                    floor = new Floor(randomazer.Next(6, 11), floor.FloorLevel - 10);
+                    player.ChangeCurrentFloor(floor);
+                    Console.Clear();
+                    floor.ShowMap(dictionary);
+                    continue;
+                }
+                foreach (var enemy in floor.Mobs)
                 {
                     enemy.Move(dictionary, player);
+                    if (enemy.CanAttackPlayer(player))
+                    {
+                        if (randomazer.Next(100) < enemy.Dexterity)
+                        {
+                            broadcaster.PlayerMiss(enemy);
+                        }
+                        else
+                        {
+                            var damage = enemy.Armor - player.Attack;
+                            if (damage < 0)
+                            {
+                                enemy.HP += damage;
+                                broadcaster.PlayerHit(enemy, player);
+                            }
+                            else
+                            {
+                                broadcaster.PlayerHitBlock(enemy, player);
+                            }
+                        }
+
+                        if (enemy.isDead())
+                        {
+                            player.Score += enemy.Points;
+                            broadcaster.EnemyIsDead(enemy);
+                            floor.Graveyard.Add(enemy);
+                        }
+                        else
+                        {
+                            if (randomazer.Next(100) < player.Dexterity)
+                            {
+                                broadcaster.EnemyMiss(enemy);
+                            }
+                            else
+                            {
+                                var damage = player.Armor - enemy.Attack;
+                                if (damage < 0)
+                                {
+                                    player.HP += damage;
+                                    broadcaster.EnemyHit(enemy, player);
+                                }
+                                else
+                                {
+                                    broadcaster.EnemyHitBlock(enemy);
+                                }
+                            }
+                        }
+                    }
                 }
+                foreach (var corpse in floor.Graveyard)
+                {
+                    floor.Mobs.Remove(corpse);
+                    corpse.Decomposition(dictionary);
+                }
+                floor.Graveyard = new List<Mob>();
             }
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine("Ваше приключение окончено...");
+            Console.WriteLine("Ваш счёт: " + (player.Score * 1.15 * deep));
         }
     }
 }
