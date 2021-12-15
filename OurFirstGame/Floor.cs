@@ -10,16 +10,16 @@ class Floor
     public List<Room> Rooms;
     public List<Mob> Mobs = new List<Mob>();
     public List<Mob> Graveyard = new List<Mob>();
+    public List<Chest> Chests = new List<Chest>();
 
     public Ladder Ladder;
 
     public static List<int> Walls = new List<int> { 2, 3, 4, 5, 6, 7 };
-    public static List<int> WallsExtended = new List<int> { 2, 3, 4, 5, 6, 7, 99 };
+    public static List<int> WallsExtended = new List<int> { 2, 3, 4, 5, 6, 7, 98, 99 };
     public static List<int> Enemies = new List<int> { 10, 11, 12, 13, 14, 15 };
 
     public Floor(int roomCount, int floorLevel)
     {
-        //RoomCount = Rnd.Next(6, 11);
         FloorLevel = floorLevel;
         RoomCount = roomCount;
         Rooms = new List<Room>();
@@ -31,7 +31,22 @@ class Floor
 
     public void PlaceLoot()
     {
-
+        foreach (var room in Rooms)
+        {
+            if (room.RoomId == 0)
+            {
+                continue;
+            }
+            if (Rnd.Next(100) < 33)
+            {
+                var tempPosition = new Point(Rnd.Next(1, room.Columns - 2), Rnd.Next(1, room.Rows - 2));
+                while (room.Field[tempPosition.Y, tempPosition.X] == 1)
+                {
+                    tempPosition = new Point(Rnd.Next(1, room.Columns - 2), Rnd.Next(1, room.Rows - 2));
+                }
+                Chests.Add(new Chest(tempPosition, room.RoomId, this));
+            }
+        }
     }
 
     private void PlaceMobs()

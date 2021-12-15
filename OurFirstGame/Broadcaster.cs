@@ -27,17 +27,17 @@ class Broadcaster
         var phrase = "";
         if (enemy.Male)
         {
-            phrase = "Ваша броня взяла на себя " + player.Armor + " ед. урона, но " + enemy.Name + " всё же нанес вам " + (enemy.Attack - player.Armor) + " ед. урона!";
+            phrase = "Вы заблокировали своим щитом " + player.Armor + " ед. урона, но " + enemy.Name + " всё же нанес вам " + (enemy.Attack - player.Armor) + " ед. урона!";
         }
         else
         {
-            phrase = "Ваша броня взяла на себя " + player.Armor + " ед. урона, но " + enemy.Name + " всё же нанесла вам " + (enemy.Attack - player.Armor) + " ед. урона!";
+            phrase = "Вы заблокировали своим щитом " + player.Armor + " ед. урона, но " + enemy.Name + " всё же нанесла вам " + (enemy.Attack - player.Armor) + " ед. урона!";
         }
         WritePhrase(phrase);
     }
     public void EnemyHitBlock(Mob enemy)
     {
-        var phrase = "Вы полностью заблокировали урон от " + enemy.NameForBlock + " своей бронёй!";
+        var phrase = "Вы полностью заблокировали урон от " + enemy.NameForBlock + " своим щитом!";
         WritePhrase(phrase);
     }
 
@@ -67,6 +67,32 @@ class Broadcaster
     public void PlayerMiss(Mob enemy)
     {
         var phrase = "Вы промазали по " + enemy.NameForHitAndMiss + "!";
+        WritePhrase(phrase);
+    }
+
+    public void PlayerSwapArmor(Chest chest)
+    {
+        var phrase = "Вы нашли " + chest.Item.Name + "! Ваш показатель брони стал: " + chest.Item.Value;
+        WritePhrase(phrase);
+    }
+    public void PlayerSwapWeapon(Chest chest)
+    {
+        var phrase = "Вы взяли в руки " + chest.Item.Name + "! Ваш показатель атаки стал: " + chest.Item.Value;
+        WritePhrase(phrase);
+    }
+    public void PlayerPickMedicine()
+    {
+        var phrase = "Вы нашли аптечку!";
+        WritePhrase(phrase);
+    }
+    public void PlayerHeal()
+    {
+        var phrase = "Вы использовали аптечку, ваше здоровье на максимуме!";
+        WritePhrase(phrase);
+    }
+    public void PlayerLastBreath()
+    {
+        var phrase = "Вы тянетесь в рюкзак за аптечкой, но не находите её. Ваши Глаза застилает тьма...";
         WritePhrase(phrase);
     }
 }

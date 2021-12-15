@@ -12,7 +12,7 @@ namespace OurFirstGame
     {
         static void Main(string[] args)
         {
-            //ctrl+shift+/
+            //ctrl+shift+/ - комментирование
             var randomazer = new Random();
             var broadcaster = new Broadcaster();
             var dictionary = new Dictionary<int, string>
@@ -33,6 +33,7 @@ namespace OurFirstGame
                 {13,"A"},//Аlligator
                 {14,"K"},//Knight
                 {15,"G"},//Goblin
+                {98,"C" },//Chest
                 {99,"X"}//NextFloor
             };
 
@@ -57,6 +58,25 @@ namespace OurFirstGame
                     floor.ShowMap(dictionary);
                     continue;
                 }
+                if (player.CheckChestPlacement())
+                {
+                    var chest = player.PickChest();
+                    player.OpenChest(chest);
+                    if (chest.Item.Type.Equals(ItemTypers.Weapon))
+                    {
+                        broadcaster.PlayerSwapWeapon(chest);
+                    }
+                    else if (chest.Item.Type.Equals(ItemTypers.Armor))
+                    {
+                        broadcaster.PlayerSwapArmor(chest);
+                    }
+                    else
+                    {
+                        broadcaster.PlayerPickMedicine();
+                    }
+                    floor.Rooms[player.CurrentRoom.RoomId].Field[chest.Position.Y, chest.Position.X] = 1;
+                    floor.Chests.Remove(chest);
+                }
                 foreach (var enemy in floor.Mobs)
                 {
                     enemy.Move(dictionary, player);
@@ -79,7 +99,6 @@ namespace OurFirstGame
                                 broadcaster.PlayerHitBlock(enemy, player);
                             }
                         }
-
                         if (enemy.isDead())
                         {
                             player.Score += enemy.Points;
@@ -114,11 +133,23 @@ namespace OurFirstGame
                     corpse.Decomposition(dictionary);
                 }
                 floor.Graveyard = new List<Mob>();
+                if (player.isDead())
+                {
+                    if (player.MedicineCount > 0)
+                    {
+                        player.HP = 15;
+                        broadcaster.PlayerHeal();
+                    }
+                    else
+                    {
+                        broadcaster.PlayerLastBreath();
+                    }
+                }
             }
             Console.Clear();
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Ваше приключение окончено...");
-            Console.WriteLine("Ваш счёт: " + (player.Score * 1.15 * deep));
+            Console.WriteLine("Ваш итоговый счёт: " + (player.Score * 1.15 * deep));
         }
     }
 }
