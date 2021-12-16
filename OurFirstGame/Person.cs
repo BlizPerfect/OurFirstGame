@@ -2,27 +2,38 @@
 using System.Collections.Generic;
 using System.Drawing;
 
+
+/// <summary>
+/// Абстрактная сущность существо
+/// </summary>
 abstract class Person
 {
-    public Point Position;
-    public Point PreviousPosition;
-    public Floor CurrentFloor;
-    public Room CurrentRoom;
+    public Point Position; // Позиция существа в комнате
+    public Point PreviousPosition; // Предыдущая позиция существа в комнате
+    public Floor CurrentFloor; // Текущий этаж для существа
+    public Room CurrentRoom; // Текущая комната, в котором существо находится
 
+    public int Id; // Идентификатор существа
+    public int HP; // Здровье существа
+    public int Attack; // Атака существа
+    public int Armor; // Броня существа
+    public int Dexterity; // Шанс существа уклонениться от атаки
+    public int POV; // Дальность зрения существа
 
-    public int Id;
-    public int HP;
-    public int Attack;
-    public int Armor;
-    public int Dexterity;
-    public int POV;
-
-    public void ChangeCurrentRoom(Room newCurrentRoom)
+    /// <summary>
+    /// Смена текущей комнаты
+    /// </summary>
+    /// <returns>void</returns>
+    protected void ChangeCurrentRoom(Room newCurrentRoom)
     {
         CurrentRoom = newCurrentRoom;
     }
 
-    public void Teleporting(int x, int y, Dictionary<int, string> dictionary)
+    /// <summary>
+    /// Перемещение персонажа между комнатами
+    /// </summary>
+    /// <returns>void</returns>
+    protected void Teleporting(int x, int y, Dictionary<int, string> dictionary)
     {
         var gate = CurrentRoom.Gates.Find(x => x.GatePosition.Equals(Position));
         var nextGate = CurrentFloor.Rooms[gate.NextRoomIndex].Gates.Find(x => x.GateId == gate.NextGateId);
@@ -44,17 +55,30 @@ abstract class Person
         }
     }
 
+    /// <summary>
+    /// Проверка, мертво ли существо
+    /// </summary>
+    /// <returns>bool</returns>
     public bool isDead()
     {
         return HP <= 0;
     }
+
+    /// <summary>
+    /// Удаление существа с экрана
+    /// </summary>
+    /// <returns>void</returns>
     public void Decomposition(Dictionary<int, string> dictionary)
     {
         CurrentFloor.Rooms[CurrentRoom.RoomId].Field[Position.Y, Position.X] = 0;
         CurrentRoom.ReDrawOneCell(Position.X, Position.Y, dictionary);
     }
 
-    public void PersonDebug(int x, int y)
+    /// <summary>
+    /// Использовалось при разработке, в данный момент не нужно
+    /// </summary>
+    /// <returns>void</returns>
+    private void PersonDebug(int x, int y)
     {
         Console.SetCursorPosition(x, y);
         Console.Write("Current room ID: " + CurrentRoom.RoomId);
@@ -72,9 +96,17 @@ abstract class Person
         Console.SetCursorPosition(0, 0);
     }
 
+    /// <summary>
+    /// Передвижение существа
+    /// </summary>
+    /// <returns>void</returns>
     public abstract void Move(Dictionary<int, string> dictionary, Player player);
 
-    public bool CheckArrayLimits(int dx, int dy)
+    /// <summary>
+    /// Проверка, находтся ли существа в пределах комнаты
+    /// </summary>
+    /// <returns>bool</returns>
+    protected bool CheckArrayLimits(int dx, int dy)
     {
         return (Position.X + dx >= 0 &&
             Position.X + dx < CurrentRoom.Columns &&
@@ -82,30 +114,57 @@ abstract class Person
             Position.Y + dy < CurrentRoom.Rows);
     }
 
-    public bool CheckGateExit(Room nextRoom, Gate nextGate)
+    /// <summary>
+    /// Проверка, находтся ли существа в пределах комнаты
+    /// </summary>
+    /// <returns>bool</returns>
+    private bool CheckGateExit(Room nextRoom, Gate nextGate)
     {
         return !Floor.Enemies.Contains(nextRoom.Field[nextGate.GatePosition.Y, nextGate.GatePosition.X]) &&
             nextRoom.Field[nextGate.GatePosition.Y, nextGate.GatePosition.X] != 8;
     }
 
-    public bool CheckArrayEnemies(int x, int y)
+    /// <summary>
+    /// Проверка, не находится ли по координатам x и y враг
+    /// </summary>
+    /// <returns>bool</returns>
+    protected bool CheckArrayEnemies(int x, int y)
     {
         return !Floor.Enemies.Contains(CurrentRoom.Field[y, x]);
     }
-    public bool CheckArrayPlayer(int x, int y)
+
+    /// <summary>
+    /// Проверка, не находится ли по координатам x и y игрок
+    /// </summary>
+    /// <returns>bool</returns>
+    protected bool CheckArrayPlayer(int x, int y)
     {
         return CurrentRoom.Field[y, x] == 8;
     }
-    public bool CheckArrayWalls(int x, int y)
+
+    /// <summary>
+    /// Проверка, не находится ли по координатам x и y стена
+    /// </summary>
+    /// <returns>bool</returns>
+    protected bool CheckArrayWalls(int x, int y)
     {
         return !Floor.Walls.Contains(CurrentRoom.Field[y, x]);
     }
+
+    /// <summary>
+    /// Проверка, не находится ли по координатам x и y стена
+    /// </summary>
+    /// <returns>bool</returns>
     public bool CheckArrayWallsExtended(int x, int y)
     {
         return !Floor.WallsExtended.Contains(CurrentRoom.Field[y, x]);
     }
 
-    public bool CheckGatePlacement(int x, int y)
+    /// <summary>
+    /// Проверка, не находится ли по координатам x и y врата
+    /// </summary>
+    /// <returns>bool</returns>
+    protected bool CheckGatePlacement(int x, int y)
     {
         foreach (var gate in CurrentRoom.Gates)
         {

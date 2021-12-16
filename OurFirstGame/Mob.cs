@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using System.Drawing;
 
+/// <summary>
+/// Сущность врага.
+/// </summary>
 class Mob : Person
 {
-    public bool SawPlayer = false;
+    private bool SawPlayer = false; // Видел ли враг игрока
 
-    public string Name;
-    public string NameForHitAndMiss;
-    public string NameForBlock;
-    public bool Male;
-    public int Points;
+    public string Name { protected set; get; } // Имя врага
+    public string NameForHitAndMiss { protected set; get; } // Имя врага в нужном падеже для промаха по нему
+    public string NameForBlock { protected set; get; } // Имя врага в нужном падеже для полного блокирования урона по нему
+    public bool Male { protected set; get; } // Является ли враг "мужчиной"
+    public int Points { protected set; get; } // Кол-во очков за победу над врагом
 
     public Mob(Point startingPosition, Floor currentFloor, int spawnRoomId, int id)
     {
@@ -24,7 +27,11 @@ class Mob : Person
         POV = 5;
     }
 
-    public bool CanSeePlayer(Player player)
+    /// <summary>
+    /// Проверка, видит ли враг игрока
+    /// </summary>
+    /// <returns>bool</returns>
+    private bool CanSeePlayer(Player player)
     {
         for (var dy = -1 * POV; dy <= POV; dy++)
         {
@@ -39,6 +46,10 @@ class Mob : Person
         return false;
     }
 
+    /// <summary>
+    /// Проверка, может ли враг атаковать игрока
+    /// </summary>
+    /// <returns>bool</returns>
     public bool CanAttackPlayer(Player player)
     {
         for (var dy = -1; dy <= 1; dy++)
@@ -54,6 +65,10 @@ class Mob : Person
         return false;
     }
 
+    /// <summary>
+    /// Передвижение врага
+    /// </summary>
+    /// <returns>void</returns>
     public override void Move(Dictionary<int, string> dictionary, Player player)
     {
         //8 0 5
@@ -278,6 +293,10 @@ class Mob : Person
     }
 }
 
+
+/// <summary>
+/// Враг Зомби
+/// </summary>
 class Zombie : Mob
 {
     public Zombie(Point startingPosition, Floor currentFloor, int spawnRoomId, int id) : base(startingPosition, currentFloor, spawnRoomId, id)
@@ -293,9 +312,13 @@ class Zombie : Mob
         Points = 1;
     }
 }
+
+/// <summary>
+/// Враг Змея
+/// </summary>
 class Snake : Mob
 {
-    public static int Chance = 55;
+    public readonly static int Chance = 55; // Шанс появления данного врага
     public Snake(Point startingPosition, Floor currentFloor, int spawnRoomId, int id) : base(startingPosition, currentFloor, spawnRoomId, id)
     {
         Attack = 3;
@@ -309,15 +332,19 @@ class Snake : Mob
         Points = 10;
     }
 }
+
+/// <summary>
+/// Враг С.М.Е.Р.Т.Ь
+/// </summary>
 class Death : Mob
 {
-    public static int Chance = -9;
+    public readonly static int Chance = -9; // Шанс появления данного врага
     public Death(Point startingPosition, Floor currentFloor, int spawnRoomId, int id) : base(startingPosition, currentFloor, spawnRoomId, id)
     {
-        Attack = 15;
+        Attack = 20;
         HP = 30;
         Dexterity = 50;
-        Armor = 10;
+        Armor = 12;
         Name = "C.M.E.P.T.Ь";
         NameForHitAndMiss = "C.М.Е.Р.Т.И";
         NameForBlock = NameForHitAndMiss;
@@ -325,9 +352,13 @@ class Death : Mob
         Points = 1000;
     }
 }
+
+/// <summary>
+/// Враг Аллигатор
+/// </summary>
 class Alligator : Mob
 {
-    public static int Chance = 45;
+    public readonly static int Chance = 45; // Шанс появления данного врага
     public Alligator(Point startingPosition, Floor currentFloor, int spawnRoomId, int id) : base(startingPosition, currentFloor, spawnRoomId, id)
     {
         Attack = 4;
@@ -341,9 +372,13 @@ class Alligator : Mob
         Points = 20;
     }
 }
+
+/// <summary>
+/// Враг рыцарь
+/// </summary>
 class Knight : Mob
 {
-    public static int Chance = 35;
+    public readonly static int Chance = 35; // Шанс появления данного врага
     public Knight(Point startingPosition, Floor currentFloor, int spawnRoomId, int id) : base(startingPosition, currentFloor, spawnRoomId, id)
     {
         Attack = 5;
@@ -357,9 +392,13 @@ class Knight : Mob
         Points = 50;
     }
 }
+
+/// <summary>
+/// Враг гоблин
+/// </summary>
 class Goblin : Mob
 {
-    public static int Chance = 40;
+    public readonly static int Chance = 40; // Шанс появления данного врага
     public Goblin(Point startingPosition, Floor currentFloor, int spawnRoomId, int id) : base(startingPosition, currentFloor, spawnRoomId, id)
     {
         Attack = 3;

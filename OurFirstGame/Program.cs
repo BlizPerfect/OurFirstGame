@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Threading;
-
 
 namespace OurFirstGame
 {
@@ -37,14 +33,10 @@ namespace OurFirstGame
                 {99,"X"}//NextFloor
             };
 
-            //Основа<
             var deep = 1;
             Floor floor = new Floor(randomazer.Next(8, 11), 50);
-
             Player player = new Player(new Point(1, 1), floor, 0);
-
             floor.ShowMap(dictionary);
-            //Основа>
 
             while (!player.isDead())
             {
@@ -52,7 +44,7 @@ namespace OurFirstGame
                 if (player.CheckLaddePlacement())
                 {
                     deep += 1;
-                    floor = new Floor(randomazer.Next(6, 11), floor.FloorLevel - 10);
+                    floor = new Floor(randomazer.Next(8, 11), floor.FloorLevel - 10);
                     player.ChangeCurrentFloor(floor);
                     Console.Clear();
                     floor.ShowMap(dictionary);
@@ -132,11 +124,12 @@ namespace OurFirstGame
                     floor.Mobs.Remove(corpse);
                     corpse.Decomposition(dictionary);
                 }
-                floor.Graveyard = new List<Mob>();
+                floor.RefreshGraveyard();
                 if (player.isDead())
                 {
                     if (player.MedicineCount > 0)
                     {
+                        player.MedicineCount -= 1;
                         player.HP = 15;
                         broadcaster.PlayerHeal();
                     }

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
 
+/// <summary>
+/// Перечисление возможных типов предметов
+/// </summary>
 enum ItemTypers
 {
     Weapon,
@@ -8,14 +11,18 @@ enum ItemTypers
     Medicine
 }
 
+/// <summary>
+/// Сущность предмета
+/// </summary>
 class Item
 {
-    public ItemTypers Type;
-    public string Name;
-    public string Visual;
-    public int Value;
+    public ItemTypers Type { protected set; get; } // Тип предмета
+    public string Name { protected set; get; } // Имя предмета
+    public string Visual { protected set; get; } // Визуальное отображение предмета
+    public int Value { protected set; get; } // Числовое значение предмета
 
-    public static string[] FirstWeaponPhrase = new string[]
+    //Список первых слов для создания имени меча
+    public readonly static string[] FirstWeaponPhrase = new string[]
     {
         "Длинный ",
         "Короткий ",
@@ -32,7 +39,9 @@ class Item
         "Драконий ",
         "Демонический ",
     };
-    public static string[] SecondPhrase = new string[]
+
+    //Список вторых фраз для создания предмета
+    public readonly static string[] SecondPhrase = new string[]
     {
         " Хаоса",
         " Огня",
@@ -45,7 +54,9 @@ class Item
         " Странника",
         " Скверны",
     };
-    public static string[] FirstArmorPhrase = new string[]
+
+    //Список первых слов для создания имени щита
+    public readonly static string[] FirstArmorPhrase = new string[]
     {
         "Тяжёлый ",
         "Лёгкий ",
@@ -61,21 +72,28 @@ class Item
         "Драконий ",
         "Демонический ",
     };
-    //в высоту - 22 ед, в ширину-20
-    public static string[] WeaponVisual = new string[]
+
+    //Список визуального представления мечей. Ориентировочный максимальный разем - в высоту - 22 ед, в ширину-20.
+    //Превышать рекомендуемый размер очень не приветствуется, но можно на 3-4 ед.
+    public readonly static string[] WeaponVisual = new string[]
     {
         "(**)\n" +
         "IIII\n" + "####\n" + "HHHH\n" + "HHHH\n" + "####\n" + "___IIII___\n" + " .-`_._\" * *\"_._`-.\n" + "|/``  .`\\/`.  ``\\|\n" +
         "`     }    {     '\n" + ") () (\n" + "( :: )\n" + "| :: |\n" + "| )( |\n" + "| || |\n" + "| || |\n" + "| || |\n" + "| || |\n" +
         "| || |\n" + "( () )\n" + "\\  /\n" + "\\/",
+
         "/^\\\n" + "|\\ /|\n" + "| | |\n" + "| | |\n" + "| | |\n" + "| | |\n" + "| | |\n" +
         "|||\n" + "|||\n" + "|||\n" + "..  |||  ..\n" + "`\\\\=====//'\n" + "(=)\n" + "(=)\n" + "(=)\n" + "\\U/"
     };
-    public static string[] ArmorVisual = new string[]
+
+    //Список визуального представления щитов. Ориентировочный максимальный разем - в высоту - 22 ед, в ширину-20.
+    //Превышать рекомендуемый размер очень не приветствуется, но можно на 3-4 ед.
+    public readonly static string[] ArmorVisual = new string[]
     {
         "\\_ _/\n" + "] --__________-- [\n" + "|       ||       |\n" + "\\       ||       /\n" +
         "[      ||      ]\n" + "|______||______|\n" + "|------..------|\n" + "]      ||      [\n" +
         "\\     ||     /\n" + "[    ||    ]\n" + "\\    ||    /\n" + "[   ||   ]\n" + "\\__||__/\n",
+
          "_________________________\n" + "|<><><>     |  |    <><><>|\n" + "|<>         |  |        <>|\n" +
         "|   (______<\\-/> ______)  |\n" + "|  /_.-=-.\\| \" |/.-=-._\\  |\n" + "|   /_    \\(o_o)/    _\\   |\n" +
         "|    /_  /\\/ ^ \\/\\  _\\    |\n" + "|      \\/ | / \\ | \\/      |\n" + "|_______ /((( )))\\ _______|\n" +
@@ -85,7 +103,11 @@ class Item
         " `-.  .-`\n" + " '--'\n"
     };
 
-    public void GenerateName()
+    /// <summary>
+    /// Генерирование имени для предмета.
+    /// </summary>
+    /// <returns>void</returns>
+    protected void GenerateName()
     {
         var rnd = new Random();
         if (Type.Equals(ItemTypers.Weapon))
@@ -101,19 +123,29 @@ class Item
             Name = "Аптечку";
         }
     }
-    public void GenerateStats(Player player)
+
+    /// <summary>
+    /// Генерирование статов для предмета.
+    /// </summary>
+    /// <returns>void</returns>
+    protected void GenerateStats(Player player)
     {
         var rnd = new Random();
         if (Type.Equals(ItemTypers.Weapon))
         {
-            Value = player.Attack + rnd.Next(1, 4);
+            Value = player.Attack + rnd.Next(1, 3);
         }
         else if (Type.Equals(ItemTypers.Armor))
         {
-            Value = player.Armor + rnd.Next(1, 4);
+            Value = player.Armor + rnd.Next(1, 3);
         }
     }
-    public void GenerateVisual()
+
+    /// <summary>
+    /// Генерирование визуального оформления для предмета.
+    /// </summary>
+    /// <returns>void</returns>
+    protected void GenerateVisual()
     {
         var rnd = new Random();
         if (Type.Equals(ItemTypers.Weapon))
@@ -122,11 +154,14 @@ class Item
         }
         else if (Type.Equals(ItemTypers.Armor))
         {
-            Visual = WeaponVisual[rnd.Next(0, WeaponVisual.Length)];
+            Visual = ArmorVisual[rnd.Next(0, ArmorVisual.Length)];
         }
     }
 }
 
+/// <summary>
+/// Сущность аптечки
+/// </summary>
 class Medicine : Item
 {
     public Medicine(Player player)
@@ -136,7 +171,9 @@ class Medicine : Item
     }
 }
 
-
+/// <summary>
+/// Сущность меча.
+/// </summary>
 class Weapon : Item
 {
     public Weapon(Player player)
@@ -147,6 +184,10 @@ class Weapon : Item
         GenerateVisual();
     }
 }
+
+/// <summary>
+/// Сущность щита.
+/// </summary>
 class Armor : Item
 {
     public Armor(Player player)
@@ -158,13 +199,16 @@ class Armor : Item
     }
 }
 
-
+/// <summary>
+/// Сущность сундука.
+/// </summary>
 class Chest
 {
-    public Item Item;
-    public Point Position;
-    public Floor CurrentFloor;
-    public Room CurrentRoom;
+    public Item Item { private set; get; } // Предмет, лежащий в сундуке
+    public Point Position { private set; get; } // Позиция сундука в комнате
+    public Floor CurrentFloor { private set; get; } // Текущий этаж для сундука
+    public Room CurrentRoom { private set; get; } // Комната, в котором сундук находится
+
     public Chest(Point position, int roomIndex, Floor floor)
     {
         Position = position;
@@ -172,6 +216,11 @@ class Chest
         CurrentRoom = CurrentFloor.Rooms[roomIndex];
         CurrentFloor.Rooms[roomIndex].Field[Position.Y, Position.X] = 98;
     }
+
+    /// <summary>
+    /// Создание предмета в момент открытия сундука.
+    /// </summary>
+    /// <returns>void</returns>
     public void PutItemIntoChest(Player player)
     {
         var rnd = new Random();

@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
+/// <summary>
+/// Сущность игрока
+/// </summary>
 class Player : Person
 {
-    public int Score = 0;
-    public int MedicineCount = 0;
+    public int Score { set; get; } // Счёт игрока
+    public int MedicineCount { set; get; } // Кол-во апетчек у игрока
 
     public string WeaponVisual = "/\\\n" + "// \\\n" + "|| |\n" + "|| |\n" + "|| |\n" + "|| |\n" + "|| |\n" +
         "|| |\n" + "__ || | __\n" + "/___||_|___\\\n" + "ww\n" + "MM\n" + "_MM_\n" + "(&<>&)\n" + "~~~~";
@@ -20,6 +23,8 @@ class Player : Person
 
     public Player(Point startingPosition, Floor currentFloor, int spawnRoomId)
     {
+        Score = 0;
+        MedicineCount = 0;
         Position.Y = startingPosition.Y;
         Position.X = startingPosition.X;
         PreviousPosition = Position;
@@ -29,13 +34,17 @@ class Player : Person
         currentFloor.Rooms[spawnRoomId].Field[startingPosition.Y, startingPosition.X] = Id;
         POV = 6;
 
-        Attack = 5;
+        Attack = 3;
         HP = 15;
         Dexterity = 33;
         Armor = 2;
     }
 
-    public void Hud(int x, int y)
+    /// <summary>
+    /// Отрисовка HUD
+    /// </summary>
+    /// <returns>void</returns>
+    private void Hud(int x, int y)
     {
         Console.SetCursorPosition(x, y);
         Console.Write("PLAYER STATS:");
@@ -48,10 +57,16 @@ class Player : Person
         Console.Write("{0,0}{1,43}", "Ваш верный меч:", "Ваш неприступный щит:");
         DrawItem(x, y + 6, WeaponVisual);
         DrawItem(x + 37, y + 6, ArmorVisual);
+        Console.SetCursorPosition(x, y + 35);
+        Console.Write("Score: {0,3}", Score);
         Console.SetCursorPosition(0, 0);
     }
 
-    public void DrawItem(int x, int y, string item)
+    /// <summary>
+    /// Отрисовка предмета
+    /// </summary>
+    /// <returns>void</returns>
+    private void DrawItem(int x, int y, string item)
     {
         var splittedWeaponString = item.Split("\n");
         var max = 0;
@@ -69,11 +84,16 @@ class Player : Person
             y += 1;
         }
     }
-    public void ClearItem(int x, int y)
+
+    /// <summary>
+    /// Очистка визуала предыдущего приедмета
+    /// </summary>
+    /// <returns>void</returns>
+    private void ClearItem(int x, int y)
     {
-        for (var i = 0; i < 22; i++)
+        for (var i = 0; i < 30; i++)
         {
-            for (var j = 0; j < 20; j++)
+            for (var j = 0; j < 30; j++)
             {
                 Console.SetCursorPosition(x + j, y + i);
                 Console.Write(" ");
@@ -81,6 +101,10 @@ class Player : Person
         }
     }
 
+    /// <summary>
+    /// Передвижение игрока
+    /// </summary>
+    /// <returns>void</returns>
     public override void Move(Dictionary<int, string> dictionary, Player player)
     {
         Hud(110, 1);
@@ -156,6 +180,11 @@ class Player : Person
         }
     }
 
+
+    /// <summary>
+    /// Проверка, не находится ли игрок на лестнице
+    /// </summary>
+    /// <returns>bool</returns>
     public bool CheckLaddePlacement()
     {
         if (CurrentFloor.Ladder.Position.X == Position.X &&
@@ -166,6 +195,11 @@ class Player : Person
         }
         return false;
     }
+
+    /// <summary>
+    /// Проверка, не находится ли игрок на Сундуке
+    /// </summary>
+    /// <returns>bool</returns>
     public bool CheckChestPlacement()
     {
         foreach (var chest in CurrentFloor.Chests)
@@ -179,12 +213,21 @@ class Player : Person
         }
         return false;
     }
+
+    /// <summary>
+    /// Выбор нужного сундука
+    /// </summary>
+    /// <returns>Chest</returns>
     public Chest PickChest()
     {
         var chest = CurrentFloor.Chests.First(x => x.CurrentRoom.RoomId == CurrentRoom.RoomId);
         return CurrentFloor.Chests.Find(x => CheckChestPlacement());
     }
 
+    /// <summary>
+    /// Смена этажа
+    /// </summary>
+    /// <returns>void</returns>
     public void ChangeCurrentFloor(Floor newFloor)
     {
         CurrentFloor = newFloor;
@@ -195,6 +238,10 @@ class Player : Person
         PreviousPosition = Position;
     }
 
+    /// <summary>
+    /// Открытие сундука и получение предмета из него
+    /// </summary>
+    /// <returns>void</returns>
     public void OpenChest(Chest chest)
     {
         chest.PutItemIntoChest(this);

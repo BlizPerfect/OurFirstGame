@@ -2,34 +2,57 @@
 using System.Collections.Generic;
 using System.Drawing;
 
+/// <summary>
+/// Сущность этажа.
+/// </summary>
 class Floor
 {
-    public int FloorLevel;
-    public Random Rnd = new Random();
-    public int RoomCount;
-    public List<Room> Rooms;
-    public List<Mob> Mobs = new List<Mob>();
-    public List<Mob> Graveyard = new List<Mob>();
-    public List<Chest> Chests = new List<Chest>();
+    public int FloorLevel { private set; get; } // Текущая сложность уровня
+    private Random Rnd = new Random();
+    public int RoomCount; // Число комнат на уровне
+    public List<Room> Rooms { private set; get; } // Список комнат уровня
+    public List<Mob> Mobs { private set; get; } // Список врагов на уровне
+    public List<Mob> Graveyard { private set; get; } // Список мобов, которые умерли, а следовательно должны быть удалены из Mobs
+    public List<Chest> Chests { private set; get; } // Список сундуков на уровне
 
-    public Ladder Ladder;
+    public Ladder Ladder { private set; get; } // Сущность лестницы на уровне
 
-    public static List<int> Walls = new List<int> { 2, 3, 4, 5, 6, 7 };
-    public static List<int> WallsExtended = new List<int> { 2, 3, 4, 5, 6, 7, 98, 99 };
-    public static List<int> Enemies = new List<int> { 10, 11, 12, 13, 14, 15 };
+    public readonly static List<int> Walls = new List<int> { 2, 3, 4, 5, 6, 7 }; //Список обозначений стен
+
+    //Расширенный список обозначений стен
+    public readonly static List<int> WallsExtended = new List<int> { 2, 3, 4, 5, 6, 7, 98, 99 };
+
+    //Список обозначений врагов
+    public readonly static List<int> Enemies = new List<int> { 10, 11, 12, 13, 14, 15 };
 
     public Floor(int roomCount, int floorLevel)
     {
         FloorLevel = floorLevel;
         RoomCount = roomCount;
         Rooms = new List<Room>();
+        Graveyard = new List<Mob>();
+        Mobs = new List<Mob>();
+        Chests = new List<Chest>();
         CreateFloor();
         PlaceLadder();
-        PlaceMobs();
-        PlaceLoot();
+        PlaceMobs(66);
+        PlaceLoot(20);
     }
 
-    public void PlaceLoot()
+    /// <summary>
+    /// Очистка Graveyard.
+    /// </summary>
+    /// <returns>void</returns>
+    public void RefreshGraveyard()
+    {
+        Graveyard = new List<Mob>();
+    }
+
+    /// <summary>
+    /// Расположение, с шаносом равным chance, сундуков в каждой комнате уровня.
+    /// </summary>
+    /// <returns>void</returns>
+    private void PlaceLoot(int chance)
     {
         foreach (var room in Rooms)
         {
@@ -37,7 +60,7 @@ class Floor
             {
                 continue;
             }
-            if (Rnd.Next(100) < 33)
+            if (Rnd.Next(100) < chance)
             {
                 var tempPosition = new Point(Rnd.Next(1, room.Columns - 2), Rnd.Next(1, room.Rows - 2));
                 while (room.Field[tempPosition.Y, tempPosition.X] == 1)
@@ -49,7 +72,11 @@ class Floor
         }
     }
 
-    private void PlaceMobs()
+    /// <summary>
+    /// Расположение, с шаносом равным mainChance, врагов в каждой комнате уровня.
+    /// </summary>
+    /// <returns>void</returns>
+    private void PlaceMobs(int mainChance)
     {
         foreach (var room in Rooms)
         {
@@ -57,7 +84,7 @@ class Floor
             {
                 continue;
             }
-            if (Rnd.Next(100) < 66)
+            if (Rnd.Next(100) < mainChance)
             {
                 var chance = Rnd.Next(100);
                 var tempPosition = new Point(Rnd.Next(1, room.Columns - 2), Rnd.Next(1, room.Rows - 2));
@@ -72,6 +99,10 @@ class Floor
                 else if (chance + FloorLevel < Knight.Chance)
                 {
                     Mobs.Add(new Knight(tempPosition, this, room.RoomId, 14));
+                }
+                else if (chance + FloorLevel < Goblin.Chance)
+                {
+                    Mobs.Add(new Goblin(tempPosition, this, room.RoomId, 15));
                 }
                 else if (chance + FloorLevel < Alligator.Chance)
                 {
@@ -89,13 +120,21 @@ class Floor
         }
     }
 
-    public void PlaceLadder()
+    /// <summary>
+    /// Расположение лестницы в последней комнате уровня.
+    /// </summary>
+    /// <returns>void</returns>
+    private void PlaceLadder()
     {
         Rooms[RoomCount - 1].Field[2, 5] = 99;
         Ladder = new Ladder(new Point(5, 2), RoomCount - 1);
     }
 
-    public void CreateGate(Room room1, Room room2, bool isHorizontal, int gateIndex)
+    /// <summary>
+    /// Расположение переходов между комнатами внутри уровня.
+    /// </summary>
+    /// <returns>void</returns>
+    private void CreateGate(Room room1, Room room2, bool isHorizontal, int gateIndex)
     {
         if (isHorizontal)
         {
@@ -134,7 +173,11 @@ class Floor
         room2.Field[room2.Gates[room2.Gates.Count - 1].GatePosition.Y, room2.Gates[room2.Gates.Count - 1].GatePosition.X] = 9;
     }
 
-    public void CreateFloor()
+    /// <summary>
+    /// Полное создание географии уровня.
+    /// </summary>
+    /// <returns>void</returns>
+    private void CreateFloor()
     {
         for (var i = 0; i < RoomCount; i++)
         {
@@ -194,28 +237,10 @@ class Floor
         }
     }
 
-    public bool Intersect(Room room1, Room room2)
-    {
-        //a.x room1.Position.X
-        //room1.Position.X1 room1.RightColumn
-        //a.y room1.Position.Y
-        //a.y1 room1.BottomRow
-        //b.x room2.Position.X
-        //b.x1 room2.RightColumn
-        //b.y room2.Position.Y
-        //b.y1 room2.BottomRow
-        return (
-            (((room1.Position.X > room2.Position.X && room1.Position.X < room2.RightColumn) || (room1.RightColumn > room2.Position.X && room1.RightColumn < room2.RightColumn)
-      ) && ((room1.Position.Y > room2.Position.Y && room1.Position.Y < room2.BottomRow) || (room1.BottomRow > room2.Position.Y && room1.BottomRow < room2.BottomRow)))
-      || (((room2.Position.X > room1.Position.X && room2.Position.X < room1.RightColumn) || (room2.RightColumn > room1.Position.X && room2.RightColumn < room1.RightColumn)
-      ) && ((room2.Position.Y > room1.Position.Y && room2.Position.Y < room1.BottomRow) || (room2.BottomRow > room1.Position.Y && room2.BottomRow < room1.BottomRow)
-      ))) || ((((room1.Position.X > room2.Position.X && room1.Position.X < room2.RightColumn) || (room1.RightColumn > room2.Position.X && room1.RightColumn < room2.RightColumn)
-      ) && ((room2.Position.Y > room1.Position.Y && room2.Position.Y < room1.BottomRow) || (room2.BottomRow > room1.Position.Y && room2.BottomRow < room1.BottomRow)
-      )) || (((room2.Position.X > room1.Position.X && room2.Position.X < room1.RightColumn) || (room2.RightColumn > room1.Position.X && room2.RightColumn < room1.RightColumn)
-      ) && ((room1.Position.Y > room2.Position.Y && room1.Position.Y < room2.BottomRow) || (room1.BottomRow > room2.Position.Y && room1.BottomRow < room2.BottomRow)
-      )));
-    }
-
+    /// <summary>
+    /// Полная отрисовка уровня.
+    /// </summary>
+    /// <returns>void</returns>
     public void ShowMap(Dictionary<int, string> dictionary)
     {
         foreach (var room in Rooms)
@@ -223,13 +248,4 @@ class Floor
             room.ReDrawRoom(dictionary);
         }
     }
-
-    public void ChangePersonPosition(Person person, int dx, int dy)
-    {
-        var oldX = person.Position.X - dx;
-        var oldY = person.Position.Y - dy;
-        person.CurrentRoom.Field[oldX, oldY] = 0;
-        person.CurrentRoom.Field[person.Position.X, person.Position.Y] = 8;
-    }
-
 }
